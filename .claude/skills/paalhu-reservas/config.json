@@ -1,6 +1,5 @@
 {
   "_nota": "Capacidad, turnos y política de PAALHU. reservas.mjs lee este archivo; si cambian las mesas, los horarios o la política, cámbialo aquí y en reference.md / la web.",
-  "telefono_reservas": "+34 915 48 23 76",
   "email": "owners@paalhu.es",
   "mesas": [
     { "id": "M1", "plazas": 2 },

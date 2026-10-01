@@ -11,23 +11,23 @@
 <body>
     <header>
         <h1>Book a table</h1>
-        <p><a href="../index.html">Back to PAALHU home</a></p>
+        <nav aria-label="Main navigation">
+            <ul>
+                <li><a href="about_us.html">About us</a></li>
+                <li><a href="set-menu.html">Set menu &ndash; &euro;12.90</a></li>
+                <li><a href="spice_guide.html">Spice guide &#128293;</a></li>
+                <li><a href="menu.html">Menu</a></li>
+                <li><a href="opening_hours.html">Opening hours</a></li>
+                <li><a href="location.html">Location and contact</a></li>
+                <li><a href="booking.html">Book a table</a></li>
+            </ul>
+        </nav>
     </header>
     <main>
-        <p>Your booking is confirmed instantly if we have room. If we are full, we will show you the nearest free times.</p>
-        <form action="/api/bookings" method="post">
-            <ul>
-                <li><label>Date <input type="date" name="date" required></label></li>
-                <li><label>Time <input type="time" name="time" step="900" required></label></li>
-                <li><label>Guests <input type="number" name="guests" min="1" max="12" value="2" required></label></li>
-                <li><label>Name <input type="text" name="name" maxlength="80" required></label></li>
-                <li><label>Phone <input type="tel" name="phone" maxlength="20" required></label></li>
-                <li><label>Notes (allergies, high chair, celebration&hellip;) <textarea name="notes" rows="3" maxlength="500"></textarea></label></li>
-            </ul>
-            <p><button type="submit">Confirm booking</button></p>
-        </form>
-        <p>Groups of more than 12: please call <a href="tel:+34915482376">+34 915 48 23 76</a>.</p>
-        <p>Prefer to chat? <a href="#chat">&#128172; Book by chat</a> &mdash; ask about tables, times, the menu or allergies.</p>
+        <p>We take bookings through our chat. Tell it the day, the time and how many you are, and it confirms your table straight away. If we're full, it suggests the nearest free times or adds you to the waiting list.</p>
+        <p><a href="#chat">&#128172; Open the booking chat</a></p>
+        <p>You can also use the chat to check, change or cancel a booking: just have your booking reference (R-&hellip;) and phone number to hand.</p>
+        <p>Groups of more than 12: please email <a href="mailto:owners@paalhu.es">owners@paalhu.es</a>.</p>
     </main>
 </body>
 </html>

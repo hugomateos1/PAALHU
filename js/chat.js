@@ -1,8 +1,8 @@
 // PAALHU — chat de reservas. Añade un botón flotante que abre el chat (necesita server.js).
 // Uso: <link rel="stylesheet" href="css/chat.css"> y <script src="js/chat.js" defer></script>
 (() => {
-  const TELEFONO = '+34 915 48 23 76';
-  const SALUDO = "Hi! I'm the PAALHU booking assistant. I can check availability, book a table, or answer questions about the menu and opening hours.\n¡Hola! También puedes escribirme en español.";
+  const EMAIL = 'owners@paalhu.es';
+  const SALUDO = "Hi! I'm the PAALHU booking assistant. I can check availability, book, change or cancel a table, or answer questions about the menu and opening hours.\n¡Hola! También puedes escribirme en español.";
   let sesion = null;
   try { sesion = sessionStorage.getItem('paalhu-chat'); } catch {}
 
@@ -41,7 +41,7 @@
       if (!enabled) throw new Error();
       mensaje(SALUDO, 'casa');
     } catch {
-      mensaje(`The chat isn't available right now. Please use the booking form or call us on ${TELEFONO}.`, 'aviso');
+      mensaje(`The chat isn't available right now, so we can't take bookings at the moment. Please try again a little later, or email us at ${EMAIL}.`, 'aviso');
       entrada.disabled = enviar.disabled = true;
     }
   }
@@ -64,10 +64,10 @@
       if (datos.session) { sesion = datos.session; try { sessionStorage.setItem('paalhu-chat', sesion); } catch {} }
       escribiendo.remove();
       if (datos.reply) mensaje(datos.reply, 'casa');
-      else mensaje(datos.error ?? `Something went wrong. Please call us on ${TELEFONO}.`, 'aviso');
+      else mensaje(datos.error ?? 'Something went wrong. Please try again in a moment.', 'aviso');
     } catch {
       escribiendo.remove();
-      mensaje(`We couldn't reach the restaurant. Please try again or call us on ${TELEFONO}.`, 'aviso');
+      mensaje("We couldn't reach the restaurant. Please try again in a moment.", 'aviso');
     } finally {
       enviar.disabled = false;
       entrada.focus();

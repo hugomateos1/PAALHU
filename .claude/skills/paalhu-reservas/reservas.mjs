@@ -10,9 +10,11 @@
 //   node reservas.mjs espera       <fecha> <hora> <personas> --nombre "..." --telefono "..." [--notas "..."]
 //   node reservas.mjs buscar       <texto>
 //   node reservas.mjs cuadro       <fecha> [--dias 7]
+//   node reservas.mjs historial    [--desde <fecha>] [--hasta <fecha>] [--csv archivo.csv] [--eventos]
 //
 // Fechas YYYY-MM-DD, horas HH:MM. --ahora "YYYY-MM-DDTHH:MM" fija el momento actual (para pruebas).
 // Salida: 0 = hecho, 2 = no cabe / rechazado por norma (se proponen alternativas), 1 = error de datos.
+import fs from 'node:fs';
 import { abrirLibro, DatoError, AFORO, diaTxt, plazas } from './reservas-core.mjs';
 
 const pos = [], opt = {};
@@ -23,6 +25,8 @@ for (let a = process.argv.slice(2), i = 0; i < a.length; i++) {
 const val = v => (v === true ? undefined : v);
 const libro = abrirLibro({ datos: val(opt.datos), ahora: val(opt.ahora) });
 
+// Fecha y hora de Madrid "YYYY-MM-DD HH:MM" a partir de un ISO guardado en UTC.
+const horaMadrid = iso => iso ? new Date(iso).toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).slice(0, 16) : '';
 const linea = r => `${r.id} · ${diaTxt(r.fecha)} ${r.fecha} ${r.hora} · ${r.turno} · ${r.personas} pers. · mesa ${r.mesas.join('+')} · ${r.nombre} · ${r.telefono}${r.notas ? ' · notas: ' + r.notas : ''}`;
 const aviso = o => `${o.estado} — ${o.nombreTurno} ${diaTxt(o.fecha)} ${o.fecha}: ${o.ocup}/${AFORO} plazas ocupadas (${o.comensales} comensales), mesas libres: ${o.libres.join(', ') || 'ninguna'}`;
 const avisarEspera = lista => lista.forEach(e => console.log(`AVISAR LISTA DE ESPERA — ahora cabe: ${e.id} · ${e.nombre} · ${e.telefono} · ${e.personas} pers. ${e.hora}`));
@@ -111,8 +115,40 @@ try {
       console.log(libro.cuadro(pos[0], Number(val(opt.dias) ?? 1)));
       break;
 
+    // Todas las reservas que se han hecho (también canceladas), o con --eventos cada alta, cambio y cancelación.
+    case 'historial': {
+      if (opt.eventos) {
+        const evs = libro.eventos();
+        if (!evs.length) { console.log('El historial está vacío.'); break; }
+        for (const e of evs) {
+          const r = e.reserva ?? e.entrada;
+          console.log(`${horaMadrid(e.cuando)} ·${e.accion.toUpperCase()} · ${e.origen} · ${r.id} · ${r.fecha} ${r.hora} · ${r.personas} pers. · ${r.nombre}`
+            + (e.antes ? ` (antes: ${e.antes.fecha} ${e.antes.hora}, ${e.antes.personas} pers.)` : ''));
+        }
+        console.log(`\nArchivo: ${libro.archivoHistorial}`);
+        break;
+      }
+      const rs = libro.todas({ desde: val(opt.desde), hasta: val(opt.hasta) });
+      const cols = ['Referencia', 'Fecha', 'Hora', 'Personas', 'Nombre', 'Teléfono', 'Notas', 'Estado', 'Origen', 'Creada'];
+      const fila = r => [r.id, r.fecha, r.hora, r.personas, r.nombre, r.telefono, r.notas || '', r.estado + (r.cancelacion_tardia ? ' (tardía)' : ''),
+        r.origen ?? '', horaMadrid(r.creada)];
+      if (val(opt.csv)) {
+        // Separador ";" y BOM para que Excel en español lo abra bien.
+        const celda = v => /[";\n]/.test(String(v)) ? `"${String(v).replaceAll('"', '""')}"` : String(v);
+        fs.writeFileSync(opt.csv, '﻿' + [cols, ...rs.map(fila)].map(f => f.map(celda).join(';')).join('\r\n') + '\r\n');
+        console.log(`${rs.length} reservas exportadas a ${opt.csv}`);
+        break;
+      }
+      if (!rs.length) { console.log('No hay reservas.'); break; }
+      console.log(`| ${cols.join(' | ')} |\n|${cols.map(() => '---').join('|')}|`);
+      for (const r of rs) console.log(`| ${fila(r).map(v => String(v).replaceAll('|', '/') || '—').join(' | ')} |`);
+      const n = estado => rs.filter(r => r.estado === estado).length;
+      console.log(`\n${rs.length} reservas · ${n('confirmada')} confirmadas · ${n('cancelada')} canceladas`);
+      break;
+    }
+
     default:
-      console.log('uso: node reservas.mjs turnos|disponibilidad|alta|cambiar|cancelar|espera|buscar|cuadro ... (ver cabecera del archivo)');
+      console.log('uso: node reservas.mjs turnos|disponibilidad|alta|cambiar|cancelar|espera|buscar|cuadro|historial ... (ver cabecera del archivo)');
       process.exit(1);
   }
 } catch (e) {

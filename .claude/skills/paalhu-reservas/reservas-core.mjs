@@ -1,6 +1,8 @@
 // Motor del libro de reservas de PAALHU. Lo usan la CLI (reservas.mjs, para el equipo)
-// y el servidor web (server.js, formulario y chat de clientes).
+// y el servidor web (server.js, chat de clientes).
 // Lee config.json (mesas, turnos, política) y lee/escribe el registro JSON indicado.
+// Además, cada alta, cambio, cancelación y entrada en lista de espera se añade al historial
+// (<registro>-historial.jsonl, una línea por evento), que nunca se reescribe: es el archivo permanente.
 // Devuelve objetos; cada interfaz decide qué mostrar (el chat de clientes nunca ve datos de otros clientes).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -41,6 +43,7 @@ const texto = v => (v === true || v == null ? '' : String(v));
 // Abre un libro de reservas sobre un archivo. `ahora` fija el momento actual (pruebas).
 export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
   const DATOS = path.resolve(datos);
+  const HISTORIAL = DATOS.replace(/\.json$/i, '') + '-historial.jsonl';
   const now = () => ahora ? new Date(ahora) : new Date();
 
   function cargar() {
@@ -50,6 +53,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     return db;
   }
   const guardar = db => fs.writeFileSync(DATOS, JSON.stringify(db, null, 2) + '\n');
+  const anotar = (accion, datos) => fs.appendFileSync(HISTORIAL, JSON.stringify({ cuando: now().toISOString(), accion, ...datos }) + '\n');
   const nuevoId = (lista, pref, f) => {
     const base = `${pref}-${f.replaceAll('-', '')}-`;
     return base + String(lista.filter(r => r.id.startsWith(base)).length + 1).padStart(3, '0');
@@ -98,7 +102,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
   // ¿Cabe (fecha, hora, n)? → { ok, turno, mesas, o } o { ok:false, motivo, norma?, cerrado?, o? }
   function comprobar(db, f, h, n, salvo, mesasPedidas) {
     if (n > POL.grupo_maximo)
-      return { ok: false, norma: true, motivo: `Grupo de ${n}: el máximo por reserva es ${POL.grupo_maximo} personas. Los grupos mayores se tratan por teléfono con los dueños (${cfg.telefono_reservas} / ${cfg.email}); no hay menú de grupos publicado.` };
+      return { ok: false, norma: true, motivo: `Grupo de ${n}: el máximo por reserva es ${POL.grupo_maximo} personas. Los grupos mayores se tratan por email con los dueños (${cfg.email}); no hay menú de grupos publicado.` };
     const ts = turnosDe(f);
     if (!ts.length) return { ok: false, cerrado: true, motivo: `El ${diaTxt(f)} ${f} el restaurante está cerrado.` };
     const t = turnoDe(f, h);
@@ -169,21 +173,22 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
       return c.ok ? c : rechazo(db, c, f, h, n);
     },
 
-    alta({ fecha: f, hora: h, personas: p, nombre, telefono, notas, mesas, deEspera }) {
+    alta({ fecha: f, hora: h, personas: p, nombre, telefono, notas, mesas, deEspera, origen = 'equipo' }) {
       checkFecha(f); const n = personas(p);
       if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Faltan --nombre y/o --telefono.');
       const db = cargar();
       const c = comprobar(db, f, h, n, undefined, mesas);
       if (!c.ok) return rechazo(db, c, f, h, n);
       const r = { id: nuevoId(db.reservas, 'R', f), fecha: f, hora: h, turno: c.turno.id, personas: n, mesas: c.mesas,
-        nombre: texto(nombre).trim(), telefono: texto(telefono).trim(), notas: texto(notas), estado: 'confirmada', creada: now().toISOString() };
+        nombre: texto(nombre).trim(), telefono: texto(telefono).trim(), notas: texto(notas), estado: 'confirmada', origen, creada: now().toISOString() };
       db.reservas.push(r);
       if (deEspera) { const e = db.espera.find(x => x.id === deEspera); if (e) e.estado = 'atendida'; }
       guardar(db);
+      anotar('alta', { origen, reserva: r });
       return { ok: true, reserva: r, turno: c.turno, o: ocupacion(db, f, r.turno) };
     },
 
-    cambiar(id, { fecha, hora, personas: p, notas, mesas: mesasPedidas } = {}) {
+    cambiar(id, { fecha, hora, personas: p, notas, mesas: mesasPedidas, origen = 'equipo' } = {}) {
       const db = cargar();
       const r = db.reservas.find(x => x.id === id && x.estado === 'confirmada');
       if (!r) fail(`No hay ninguna reserva confirmada con id "${id}". Usa: node reservas.mjs buscar <nombre>`);
@@ -201,13 +206,14 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
       const antes = { ...r }, turnoAntes = r.turno, fechaAntes = r.fecha;
       Object.assign(r, { fecha: f, hora: h, personas: n, mesas, turno, notas: notas === undefined ? r.notas : texto(notas), modificada: now().toISOString() });
       guardar(db);
+      anotar('cambio', { origen, antes, reserva: r });
       const movido = fechaAntes !== r.fecha || turnoAntes !== r.turno;
       return { ok: true, antes, reserva: r, o: ocupacion(db, r.fecha, r.turno),
         oAnterior: movido ? ocupacion(db, fechaAntes, turnoAntes) : null,
         esperaQueCabe: movido ? esperaQueCabe(db, fechaAntes, turnoAntes) : [] };
     },
 
-    cancelar(id) {
+    cancelar(id, { origen = 'equipo' } = {}) {
       const db = cargar();
       const r = db.reservas.find(x => x.id === id);
       if (!r) fail(`No hay ninguna reserva con id "${id}". Usa: node reservas.mjs buscar <nombre>`);
@@ -216,23 +222,42 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
       r.estado = 'cancelada'; r.cancelada_en = now().toISOString();
       r.cancelacion_tardia = horas < POL.cancelacion_sin_cargo_horas;
       guardar(db);
+      anotar('cancelacion', { origen, reserva: r });
       return { ok: true, reserva: r, horas, tardia: r.cancelacion_tardia, plazoHoras: POL.cancelacion_sin_cargo_horas, deposito: POL.deposito,
         o: ocupacion(db, r.fecha, r.turno), esperaQueCabe: esperaQueCabe(db, r.fecha, r.turno) };
     },
 
-    espera({ fecha: f, hora: h, personas: p, nombre, telefono, notas }) {
+    espera({ fecha: f, hora: h, personas: p, nombre, telefono, notas, origen = 'equipo' }) {
       checkFecha(f); const n = personas(p);
       if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Faltan --nombre y/o --telefono.');
       const t = turnoDe(f, h);
       if (!t) fail(`A las ${h} del ${diaTxt(f)} ${f} no hay turno.`);
       const db = cargar();
       const e = { id: nuevoId(db.espera, 'E', f), fecha: f, hora: h, turno: t.id, personas: n, nombre: texto(nombre).trim(), telefono: texto(telefono).trim(),
-        notas: texto(notas), estado: 'esperando', creada: now().toISOString() };
+        notas: texto(notas), estado: 'esperando', origen, creada: now().toISOString() };
       db.espera.push(e);
       guardar(db);
+      anotar('espera', { origen, entrada: e });
       const posicion = db.espera.filter(x => x.estado === 'esperando' && x.fecha === f && x.turno === t.id).length;
       return { ok: true, entrada: e, turno: t, posicion };
     },
+
+    // Todas las reservas en cualquier estado (también las canceladas), por fecha y hora.
+    todas({ desde, hasta } = {}) {
+      if (desde) checkFecha(desde);
+      if (hasta) checkFecha(hasta);
+      return cargar().reservas
+        .filter(r => (!desde || r.fecha >= desde) && (!hasta || r.fecha <= hasta))
+        .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora) || a.id.localeCompare(b.id));
+    },
+
+    // Eventos del historial permanente, en el orden en que pasaron.
+    eventos() {
+      if (!fs.existsSync(HISTORIAL)) return [];
+      return fs.readFileSync(HISTORIAL, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
+    },
+
+    archivoHistorial: HISTORIAL,
 
     obtener(id) { return cargar().reservas.find(r => r.id === id) ?? null; },
 

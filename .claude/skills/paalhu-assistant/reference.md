@@ -5,7 +5,7 @@ Update this file whenever the website changes. `order_total.mjs` reads the price
 ## Contact
 
 - Address: Calle de Pirineos 55, 28039 Madrid, Spain
-- Bookings / restaurant phone: +34 915 48 23 76 (bookings by phone every day, 12:00–23:00)
+- Bookings: only through the booking chat on the website (pages/booking.html). There is no bookings phone and no booking form.
 - Takeaway and delivery phone: +34 627 41 09 35
 - Email: owners@paalhu.es
 - Getting here: Metro Francos Rodríguez (line 7), 5 minutes' walk. Buses 44, 127 and 128 stop at the door.

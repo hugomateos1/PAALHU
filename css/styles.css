@@ -20,20 +20,26 @@ header {
     padding: 15px 30px;
 }
 nav {
-    display: flex;
     background-color: #4b1f0f;
-    padding:20px;
-    justify-content: space-between;
+    padding: 12px 20px;
     border: 3px solid #d4a017;
-
+}
+nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 nav a{
     color: #f5c542;
     text-decoration: none;
-    font-size: 24px;
-    font-size: bold;
-    font-family: Georgia,serif;
-    margin: 0 15px;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: Georgia, serif;
 }
 footer {
     display: block;
@@ -95,4 +101,11 @@ button {
 .fotos {
     display: flex;
     gap: 20px;
+}
+.especialidades{
+    margin-left: -3%;
+}
+.picante{
+width: 95%;
+font-size: 1.1em;
 }
