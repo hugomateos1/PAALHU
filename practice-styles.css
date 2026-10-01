@@ -1,0 +1,102 @@
+/*
+  practice-styles.css — Session 6 Lab, Part 1
+  Web Application Programming (G247) · CUNEF Escuela Politécnica Superior
+
+  Fill in each section below, in order. Don't skip ahead — each step should
+  visibly change starter_practice_page.html before you move to the next one.
+  Do not edit the HTML file; every change happens here.
+*/
+
+/* ---------------------------------------------------------------------
+   1. RESET
+   box-sizing: border-box on everything, plus a sensible margin/padding
+   reset on body. This goes first because every later measurement assumes
+   it's already in place.
+--------------------------------------------------------------------- */
+*{ box-sizing: border-box;}
+
+/* ---------------------------------------------------------------------
+   2. HEADER (Flexbox)
+   display: flex on <header>, title and <nav> spaced apart with
+   justify-content, vertically centered with align-items.
+--------------------------------------------------------------------- */
+header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+}
+
+/* ---------------------------------------------------------------------
+   3. NAV LINKS (Flexbox)
+   The <ul> inside <nav> becomes a flex row. Remove the default bullet
+   points (list-style: none) and space the links with gap.
+   --------------------------------------------------------------------- */
+
+nav ul {
+   display: flex;
+   list-style: none;
+   gap: 1rem;
+}
+
+/* ---------------------------------------------------------------------
+   4. PAGE LAYOUT (Grid)
+   <main> becomes a grid with two columns: #articles (wider) and
+   aside (narrower). Try grid-template-columns: 2fr 1fr; as a start,
+   then adjust.
+--------------------------------------------------------------------- */
+
+main {
+   display:grid;
+   grid-template-columns: 2fr 1fr;
+   gap: 2rem;
+   margin: 0.5rem 0.5rem;
+   padding: 2rem;
+}
+
+/* ---------------------------------------------------------------------
+   5. CARDS
+   Every article.card gets padding, a border or box-shadow, a
+   border-radius, and margin-bottom so consecutive cards don't touch.
+--------------------------------------------------------------------- */
+
+.card{
+   padding: 1.5rem;
+   border: 5px solid #DD3229;
+   border-radius: 0.5rem;
+   margin-bottom: 2rem;
+}
+
+/* ---------------------------------------------------------------------
+   6. FEATURED IMAGE
+   max-width: 100% and height: auto so the image never overflows
+   its container, whatever size the original file is.
+--------------------------------------------------------------------- */
+.featured-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+
+/* ---------------------------------------------------------------------
+   7. RESPONSIVE BREAKPOINT
+   @media (max-width: 768px) — collapse main's grid-template-columns
+   to a single column so the sidebar drops below the articles.
+--------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   8. FOOTER
+   Centered text, plus a top border or background tint to separate it
+   visually from <main>.
+--------------------------------------------------------------------- */
+footer {
+  text-align: center;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f7f7f7;
+  padding: 1.5rem 1rem;
+}

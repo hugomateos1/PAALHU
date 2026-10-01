@@ -1,0 +1,84 @@
+<!--
+  Starter file for Session 6 Lab — Part 1 (Guided CSS Practice)
+  Web Application Programming (G247) · CUNEF Escuela Politécnica Superior
+
+  Do NOT modify this HTML. Style it entirely from practice-styles.css.
+  Topic (DevNews, a sample tech blog) is intentionally generic and unrelated
+  to your Session 3 project topic — this file is shared practice only.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DevNews — Practice Page</title>
+  <link rel="stylesheet" href="practice-styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>DevNews</h1>
+    <nav>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#articles">Articles</a></li>
+        <li><a href="#">Tutorials</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+
+    <section id="featured">
+      <article>
+        <h2>The Rise of Edge Computing</h2>
+        <img src="featured.jpg" alt="Server rack representing an edge computing data center" width="800" height="400">
+        <p>
+          Edge computing pushes processing closer to where data is generated —
+          on devices and local servers — instead of routing everything through
+          a distant, centralized cloud. For latency-sensitive applications,
+          that difference is starting to matter more than raw compute power.
+        </p>
+        <p><a href="#">Continue reading →</a></p>
+      </article>
+    </section>
+
+    <section id="articles">
+      <h2>Latest Articles</h2>
+
+      <article class="card">
+        <h3>Why Static Sites Are Making a Comeback</h3>
+        <p>Static site generators are back in fashion, trading dynamic flexibility for speed, security, and radically simpler deployment.</p>
+      </article>
+
+      <article class="card">
+        <h3>A Beginner's Guide to CSS Grid</h3>
+        <p>Two-dimensional layout used to mean hacks and frameworks. Grid makes it a native, first-class part of the language.</p>
+      </article>
+
+      <article class="card">
+        <h3>What Actually Happens When You Type a URL</h3>
+        <p>DNS lookups, TCP handshakes, TLS negotiation, and a render pipeline — all before a single pixel appears.</p>
+      </article>
+
+    </section>
+
+    <aside>
+      <h2>Trending Tags</h2>
+      <ul>
+        <li><a href="#">#javascript</a></li>
+        <li><a href="#">#css</a></li>
+        <li><a href="#">#webdev</a></li>
+        <li><a href="#">#accessibility</a></li>
+        <li><a href="#">#performance</a></li>
+      </ul>
+    </aside>
+
+  </main>
+
+  <footer>
+    <p>&copy; 2026 DevNews — a practice page for Web Application Programming (G247).</p>
+  </footer>
+
+</body>
+</html>
