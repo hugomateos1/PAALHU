@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a table | PAALHU</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/chat.css">
+    <script src="../js/chat.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Book a table</h1>
+        <p><a href="../index.html">Back to PAALHU home</a></p>
+    </header>
+    <main>
+        <p>Your booking is confirmed instantly if we have room. If we are full, we will show you the nearest free times.</p>
+        <form action="/api/bookings" method="post">
+            <ul>
+                <li><label>Date <input type="date" name="date" required></label></li>
+                <li><label>Time <input type="time" name="time" step="900" required></label></li>
+                <li><label>Guests <input type="number" name="guests" min="1" max="12" value="2" required></label></li>
+                <li><label>Name <input type="text" name="name" maxlength="80" required></label></li>
+                <li><label>Phone <input type="tel" name="phone" maxlength="20" required></label></li>
+                <li><label>Notes (allergies, high chair, celebration&hellip;) <textarea name="notes" rows="3" maxlength="500"></textarea></label></li>
+            </ul>
+            <p><button type="submit">Confirm booking</button></p>
+        </form>
+        <p>Groups of more than 12: please call <a href="tel:+34915482376">+34 915 48 23 76</a>.</p>
+        <p>Prefer to chat? <a href="#chat">&#128172; Book by chat</a> &mdash; ask about tables, times, the menu or allergies.</p>
+    </main>
+</body>
+</html>

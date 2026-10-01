@@ -1,0 +1,76 @@
+{
+  "_nota": "Capacidad, turnos y política de PAALHU. reservas.mjs lee este archivo; si cambian las mesas, los horarios o la política, cámbialo aquí y en reference.md / la web.",
+  "telefono_reservas": "+34 915 48 23 76",
+  "email": "owners@paalhu.es",
+  "mesas": [
+    { "id": "M1", "plazas": 2 },
+    { "id": "M2", "plazas": 2 },
+    { "id": "M3", "plazas": 2 },
+    { "id": "M4", "plazas": 2 },
+    { "id": "M5", "plazas": 2 },
+    { "id": "M6", "plazas": 2 },
+    { "id": "M7", "plazas": 4 },
+    { "id": "M8", "plazas": 4 },
+    { "id": "M9", "plazas": 4 },
+    { "id": "M10", "plazas": 4 },
+    { "id": "M11", "plazas": 4 },
+    { "id": "M12", "plazas": 4 },
+    { "id": "M13", "plazas": 4 }
+  ],
+  "_juntables": "Cada fila es una hilera de mesas contiguas: solo se juntan mesas seguidas de la misma fila (máximo 3).",
+  "juntables": [
+    ["M1", "M2"],
+    ["M3", "M4"],
+    ["M5", "M6"],
+    ["M7", "M8", "M9", "M10", "M11", "M12", "M13"]
+  ],
+  "_turnos": "desde/hasta = horas de llegada admitidas en ese turno. La mesa queda asignada todo el turno.",
+  "turnos": {
+    "lunes": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:15" }
+    ],
+    "martes": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:15" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "22:45" }
+    ],
+    "miercoles": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:15" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "22:45" }
+    ],
+    "jueves": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:15" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "22:45" }
+    ],
+    "viernes": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:15" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "23:15" }
+    ],
+    "sabado": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:45" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "23:15" }
+    ],
+    "domingo": [
+      { "id": "comida-1", "nombre": "Comida · 1.er turno", "desde": "13:00", "hasta": "14:45" },
+      { "id": "comida-2", "nombre": "Comida · 2.º turno", "desde": "15:00", "hasta": "15:45" },
+      { "id": "cena-1", "nombre": "Cena · 1.er turno", "desde": "20:00", "hasta": "21:45" },
+      { "id": "cena-2", "nombre": "Cena · 2.º turno", "desde": "22:00", "hasta": "22:15" }
+    ]
+  },
+  "politica": {
+    "cancelacion_sin_cargo_horas": 24,
+    "grupo_maximo": 12,
+    "deposito": null,
+    "casi_completo_desde_plazas": 32
+  }
+}

@@ -60,6 +60,37 @@ caption {
     padding-bottom: 10px;
 }
 
+/* --- Formularios (reservas y pedidos) --- */
+form > p {
+    text-align: center;
+}
+form ul {
+    list-style: none;
+}
+form li {
+    margin-bottom: 10px;
+}
+input, select, textarea, button {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: #3B1F16;
+}
+textarea {
+    display: block;
+    width: 100%;
+}
+input[type="number"] {
+    width: 4em;
+}
+button {
+    background-color: #4b1f0f;
+    color: #f5c542;
+    border: 3px solid #d4a017;
+    padding: 10px 25px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
 /* --- Galería de fotos (index) --- */
 .fotos {
     display: flex;

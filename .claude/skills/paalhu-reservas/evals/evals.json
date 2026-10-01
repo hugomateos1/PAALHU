@@ -1,0 +1,12 @@
+{
+  "skill_name": "paalhu-reservas",
+  "contexto": "Hoy es jueves 2026-10-01. Todas las pruebas parten de paalhu-reservas-workspace/fixtures/reservas-inicial.json.",
+  "evals": [
+    {"id": 1, "name": "reserva-4-con-hueco", "prompt": "Tenemos una reserva para 4 personas el sábado a las 21:00, a nombre de Lucía Ortega, 611 222 333. ¿Dónde la ponemos? Regístrala y pásame el mensaje de confirmación para mandárselo por WhatsApp.", "expected_output": "Registrada en sábado 2026-10-03 cena-1 en una mesa de 4 libre (M9). Mensaje en español con saludo, datos repetidos, referencia y política de 24 h.", "files": ["fixtures/reservas-inicial.json"]},
+    {"id": 2, "name": "reserva-no-cabe", "prompt": "Llama un cliente, Jorge Peña (622 333 444), quiere mesa para 4 este viernes a las 21:00. ¿Le podemos dar?", "expected_output": "No cabe: viernes cena-1 38/40, solo M3 (mesa de 2) libre. Propone viernes 22:00 (2.º turno) u otro día y la lista de espera. No registra la reserva en el turno lleno.", "files": ["fixtures/reservas-inicial.json"]},
+    {"id": 3, "name": "grupo-8-juntar-mesas", "prompt": "Nos piden mesa para 8 el sábado a las 21:30, a nombre de Familia Hassan, 633 444 555, vienen con un carrito de bebé. Colócalos.", "expected_output": "Registrada en sábado cena-1 juntando dos mesas de 4 seguidas (M9+M10), nota del carrito.", "files": ["fixtures/reservas-inicial.json"]},
+    {"id": 4, "name": "cancelacion-libera-mesa", "prompt": "Ha llamado Martín Gil, quiere cancelar su mesa de esta noche. Cancélala y dime cómo queda el turno.", "expected_output": "Reserva de Martín (jueves cena-1, M1) cancelada; M1 libre; turno pasa de COMPLETO a 38/40; avisa de que Pérez (lista de espera) ahora cabe; mensaje al cliente sin cargos (no hay depósito).", "files": ["fixtures/reservas-inicial.json"]},
+    {"id": 5, "name": "completo-exacto", "prompt": "Mete a Pablo Ruiz, 2 personas, este viernes a las 20:30, teléfono 644 555 666. ¿Cómo queda la cena del viernes?", "expected_output": "Registrada en M3; viernes cena-1 queda 40/40 COMPLETO; cena-2 con sitio.", "files": ["fixtures/reservas-inicial.json"]},
+    {"id": 6, "name": "duda-celiacos", "prompt": "Responde a este cliente: 'Hola, somos 3 y uno es celíaco. ¿Aceptáis reservas para celíacos? ¿Qué platos sin gluten tenéis?'", "expected_output": "Mensaje cálido: sí se reserva y se anota; no afirma que ningún plato sea sin gluten (no está publicado); pide avisar al personal y da el teléfono; propone reservar.", "files": []}
+  ]
+}

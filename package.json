@@ -1,0 +1,12 @@
+{
+  "name": "paalhu-web",
+  "private": true,
+  "type": "module",
+  "description": "Web de PAALHU con reservas online y chat de reservas con Claude",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0"
+  }
+}

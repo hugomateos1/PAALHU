@@ -1,0 +1,8 @@
+node_modules/
+
+# Datos personales de clientes (nombres, teléfonos): nunca a GitHub.
+# El libro crea el archivo vacío si no existe.
+.claude/skills/paalhu-reservas/reservas.json
+
+# Resultados de las pruebas de la skill
+.claude/skills/paalhu-reservas-workspace/
