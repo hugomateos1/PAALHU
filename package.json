@@ -2,11 +2,21 @@
   "name": "paalhu-web",
   "private": true,
   "type": "module",
-  "description": "Web de PAALHU con reservas online y chat de reservas con Claude",
+  "description": "PAALHU website with online bookings and a booking chat",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0"
-  }
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hugomateos1/PAALHU.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hugomateos1/PAALHU/issues"
+  },
+  "homepage": "https://github.com/hugomateos1/PAALHU#readme"
 }

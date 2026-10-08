@@ -1,9 +1,9 @@
-// Motor del libro de reservas de PAALHU. Lo usan la CLI (reservas.mjs, para el equipo)
-// y el servidor web (server.js, chat de clientes).
-// Lee config.json (mesas, turnos, política) y lee/escribe el registro JSON indicado.
-// Además, cada alta, cambio, cancelación y entrada en lista de espera se añade al historial
-// (<registro>-historial.jsonl, una línea por evento), que nunca se reescribe: es el archivo permanente.
-// Devuelve objetos; cada interfaz decide qué mostrar (el chat de clientes nunca ve datos de otros clientes).
+// Engine of the PAALHU booking register. Used by the CLI (reservas.mjs, for the team)
+// and the web server (server.js, customer chat).
+// Reads config.json (tables, shifts, policy) and reads/writes the given JSON register.
+// Every creation, change, cancellation and waiting-list entry is also appended to the history
+// (<register>-historial.jsonl, one line per event), which is never rewritten: it is the permanent record.
+// Returns objects; each interface decides what to show (the customer chat never sees other customers' data).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -14,33 +14,34 @@ export const DATOS_POR_DEFECTO = path.join(DIR, 'reservas.json');
 const MESAS = new Map(cfg.mesas.map(m => [m.id, m.plazas]));
 export const AFORO = cfg.mesas.reduce((s, m) => s + m.plazas, 0);
 const POL = cfg.politica;
+// Day keys as used in config.json, and their English names.
 const DIAS = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-const DIAS_TXT = { miercoles: 'miércoles', sabado: 'sábado' };
+const DIAS_TXT = { domingo: 'Sunday', lunes: 'Monday', martes: 'Tuesday', miercoles: 'Wednesday', jueves: 'Thursday', viernes: 'Friday', sabado: 'Saturday' };
 
-// Error de datos de entrada (fecha mal escrita, id inexistente...). La CLI sale con 1.
+// Input data error (badly written date, unknown id...). The CLI exits with 1.
 export class DatoError extends Error {}
 const fail = msg => { throw new DatoError(msg); };
 
-// ---------- utilidades ----------
-export const min = h => { const m = /^(\d{1,2}):(\d{2})$/.exec(h ?? ''); if (!m) fail(`Hora no válida: "${h}" (usa HH:MM)`); return +m[1] * 60 + +m[2]; };
+// ---------- utilities ----------
+export const min = h => { const m = /^(\d{1,2}):(\d{2})$/.exec(h ?? ''); if (!m) fail(`Invalid time: "${h}" (use HH:MM)`); return +m[1] * 60 + +m[2]; };
 const hhmm = n => `${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`;
 export function checkFecha(f) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(f ?? '');
   const d = m && new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-  if (!d || d.toISOString().slice(0, 10) !== f) fail(`Fecha no válida: "${f}" (usa YYYY-MM-DD)`);
+  if (!d || d.toISOString().slice(0, 10) !== f) fail(`Invalid date: "${f}" (use YYYY-MM-DD)`);
   return d;
 }
 const diaDe = f => DIAS[checkFecha(f).getUTCDay()];
-export const diaTxt = f => { const d = diaDe(f); return DIAS_TXT[d] ?? d; };
+export const diaTxt = f => DIAS_TXT[diaDe(f)];
 const sumarDias = (f, n) => { const d = checkFecha(f); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 export const turnosDe = f => cfg.turnos[diaDe(f)] ?? [];
 export const turnoDe = (f, h) => turnosDe(f).find(t => min(h) >= min(t.desde) && min(h) <= min(t.hasta));
 const momento = (f, h) => new Date(`${f}T${h}:00`);
 export const plazas = ids => ids.reduce((s, id) => s + MESAS.get(id), 0);
-export const personas = v => { const n = Number(v); if (!Number.isInteger(n) || n < 1) fail(`Número de personas no válido: "${v}"`); return n; };
+export const personas = v => { const n = Number(v); if (!Number.isInteger(n) || n < 1) fail(`Invalid number of guests: "${v}"`); return n; };
 const texto = v => (v === true || v == null ? '' : String(v));
 
-// Abre un libro de reservas sobre un archivo. `ahora` fija el momento actual (pruebas).
+// Opens a booking register on a file. `ahora` sets the current time (tests).
 export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
   const DATOS = path.resolve(datos);
   const HISTORIAL = DATOS.replace(/\.json$/i, '') + '-historial.jsonl';
@@ -59,20 +60,20 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     return base + String(lista.filter(r => r.id.startsWith(base)).length + 1).padStart(3, '0');
   };
 
-  // ---------- ocupación y asignación ----------
+  // ---------- occupancy and assignment ----------
   const activas = (db, f, t, salvo) => db.reservas.filter(r => r.estado === 'confirmada' && r.fecha === f && r.turno === t && r.id !== salvo);
   function ocupacion(db, f, t, salvo) {
     const rs = activas(db, f, t, salvo);
     const usadas = new Set(rs.flatMap(r => r.mesas));
     const ocup = plazas([...usadas]);
     const libres = cfg.mesas.map(m => m.id).filter(id => !usadas.has(id));
-    const estado = libres.length === 0 ? 'COMPLETO' : ocup >= POL.casi_completo_desde_plazas ? 'CASI COMPLETO' : 'DISPONIBLE';
+    const estado = libres.length === 0 ? 'FULL' : ocup >= POL.casi_completo_desde_plazas ? 'NEARLY FULL' : 'AVAILABLE';
     const turno = turnosDe(f).find(x => x.id === t) ?? { id: t, nombre: t };
     return { fecha: f, turno: t, nombreTurno: turno.nombre, rs, libres, ocup, aforo: AFORO, comensales: rs.reduce((s, r) => s + r.personas, 0), estado };
   }
 
-  // Mejor combinación de mesas libres para n personas: una mesa, o 2–3 seguidas de la misma fila.
-  // Criterio: menos plazas sobrantes, luego menos mesas, luego el orden del salón.
+  // Best combination of free tables for n guests: one table, or 2–3 adjacent ones in the same row.
+  // Criteria: fewest spare seats, then fewest tables, then dining-room order.
   function asignar(libres, n) {
     const libre = new Set(libres), cands = [];
     for (const id of libres) cands.push([id]);
@@ -90,27 +91,27 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
 
   function validarMesas(lista, libres, n) {
     const ids = String(lista).split(/[,+ ]+/).filter(Boolean).map(s => s.toUpperCase());
-    for (const id of ids) if (!MESAS.has(id)) fail(`Mesa desconocida: ${id}. Mesas: ${[...MESAS.keys()].join(', ')}`);
+    for (const id of ids) if (!MESAS.has(id)) fail(`Unknown table: ${id}. Tables: ${[...MESAS.keys()].join(', ')}`);
     const ocupadas = ids.filter(id => !libres.includes(id));
-    if (ocupadas.length) return { error: `Mesa(s) ya ocupada(s) en ese turno: ${ocupadas.join(', ')}` };
+    if (ocupadas.length) return { error: `Table(s) already taken in that shift: ${ocupadas.join(', ')}` };
     if (ids.length > 1 && !cfg.juntables.some(f => { const i = f.indexOf(ids[0]); return i >= 0 && ids.every((id, k) => f[i + k] === id); }))
-      return { error: `Las mesas ${ids.join('+')} no están seguidas en la misma fila; no se pueden juntar.` };
-    if (plazas(ids) < n) return { error: `${ids.join('+')} tiene ${plazas(ids)} plazas; no caben ${n} personas.` };
+      return { error: `Tables ${ids.join('+')} are not adjacent in the same row, so they can't be joined.` };
+    if (plazas(ids) < n) return { error: `${ids.join('+')} has ${plazas(ids)} seats; ${n} guests don't fit.` };
     return { mesas: ids };
   }
 
-  // ¿Cabe (fecha, hora, n)? → { ok, turno, mesas, o } o { ok:false, motivo, norma?, cerrado?, o? }
+  // Does (date, time, n) fit? → { ok, turno, mesas, o } or { ok:false, motivo, norma?, cerrado?, o? }
   function comprobar(db, f, h, n, salvo, mesasPedidas) {
     if (n > POL.grupo_maximo)
-      return { ok: false, norma: true, motivo: `Grupo de ${n}: el máximo por reserva es ${POL.grupo_maximo} personas. Los grupos mayores se tratan por email con los dueños (${cfg.email}); no hay menú de grupos publicado.` };
+      return { ok: false, norma: true, motivo: `Group of ${n}: the maximum per booking is ${POL.grupo_maximo} guests. Larger groups are handled by email with the owners (${cfg.email}); there is no published group menu.` };
     const ts = turnosDe(f);
-    if (!ts.length) return { ok: false, cerrado: true, motivo: `El ${diaTxt(f)} ${f} el restaurante está cerrado.` };
+    if (!ts.length) return { ok: false, cerrado: true, motivo: `The restaurant is closed on ${diaTxt(f)} ${f}.` };
     const t = turnoDe(f, h);
     if (!t) {
-      const servicios = ts.map(x => `${x.nombre} (llegadas ${x.desde}–${x.hasta})`).join('; ');
-      return { ok: false, sinTurno: true, motivo: `A las ${h} del ${diaTxt(f)} no hay turno. Turnos de ese día: ${servicios}.` };
+      const servicios = ts.map(x => `${x.nombre} (arrivals ${x.desde}–${x.hasta})`).join('; ');
+      return { ok: false, sinTurno: true, motivo: `There is no shift at ${h} on ${diaTxt(f)}. Shifts that day: ${servicios}.` };
     }
-    if (momento(f, h) < now()) return { ok: false, pasado: true, motivo: `${f} ${h} ya ha pasado.` };
+    if (momento(f, h) < now()) return { ok: false, pasado: true, motivo: `${f} ${h} has already passed.` };
     const o = ocupacion(db, f, t.id, salvo);
     if (mesasPedidas) {
       const v = validarMesas(mesasPedidas, o.libres, n);
@@ -118,16 +119,16 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     }
     const mesas = asignar(o.libres, n);
     return mesas ? { ok: true, turno: t, mesas, o }
-      : { ok: false, turno: t, o, motivo: `No cabe un grupo de ${n} en ${t.nombre} del ${diaTxt(f)} ${f}: ${o.estado}, ${o.ocup}/${AFORO} plazas ocupadas, mesas libres: ${o.libres.join(', ') || 'ninguna'}.` };
+      : { ok: false, turno: t, o, motivo: `A group of ${n} doesn't fit in ${t.nombre} on ${diaTxt(f)} ${f}: ${o.estado}, ${o.ocup}/${AFORO} seats taken, free tables: ${o.libres.join(', ') || 'none'}.` };
   }
 
-  // Alternativas, en este orden: el mismo servicio (comida/cena) ese día, ese servicio los 7 días siguientes,
-  // y por último el otro servicio del mismo día. Dentro de cada grupo, lo más cercano a la hora pedida.
+  // Alternatives, in this order: the same service (lunch/dinner) that day, that service over the next 7 days,
+  // and finally the other service on the same day. Within each group, the closest to the requested time.
   function alternativas(db, f, h, n, salvo) {
     const pedida = min(h);
     const servicio = pedida >= 18 * 60 || pedida < 6 * 60 ? 'cena' : 'comida';
     const actual = turnoDe(f, h)?.id;
-    // La hora pedida si cae dentro del turno; si no, la más cercana admitida en ese turno.
+    // The requested time if it falls within the shift; otherwise the closest one allowed in that shift.
     const horaEn = t => {
       if (pedida >= min(t.desde) && pedida <= min(t.hasta)) return h;
       const m = Math.min(Math.max(pedida, min(t.desde)), min(t.hasta));
@@ -159,7 +160,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     .filter(e => e.estado === 'esperando' && e.fecha === f && e.turno === t)
     .filter(e => comprobar(db, e.fecha, e.hora, e.personas).ok);
 
-  // ---------- operaciones ----------
+  // ---------- operations ----------
   return {
     turnos(f) {
       checkFecha(f);
@@ -175,7 +176,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
 
     alta({ fecha: f, hora: h, personas: p, nombre, telefono, notas, mesas, deEspera, origen = 'equipo' }) {
       checkFecha(f); const n = personas(p);
-      if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Faltan --nombre y/o --telefono.');
+      if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Missing --nombre and/or --telefono.');
       const db = cargar();
       const c = comprobar(db, f, h, n, undefined, mesas);
       if (!c.ok) return rechazo(db, c, f, h, n);
@@ -191,12 +192,12 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     cambiar(id, { fecha, hora, personas: p, notas, mesas: mesasPedidas, origen = 'equipo' } = {}) {
       const db = cargar();
       const r = db.reservas.find(x => x.id === id && x.estado === 'confirmada');
-      if (!r) fail(`No hay ninguna reserva confirmada con id "${id}". Usa: node reservas.mjs buscar <nombre>`);
+      if (!r) fail(`No confirmed booking with id "${id}". Use: node reservas.mjs buscar <name>`);
       const f = fecha ?? r.fecha, h = hora ?? r.hora, n = p != null ? personas(p) : r.personas;
       checkFecha(f);
       let mesas = r.mesas, turno = r.turno;
       if (f !== r.fecha || h !== r.hora || n !== r.personas || mesasPedidas) {
-        // Si sigue en el mismo turno y la mesa actual vale, se queda en su mesa.
+        // If it stays in the same shift and its current table still works, it keeps that table.
         const t = turnoDe(f, h);
         const mantiene = !mesasPedidas && t && f === r.fecha && t.id === r.turno && plazas(r.mesas) >= n;
         const c = comprobar(db, f, h, n, r.id, mesasPedidas ?? (mantiene ? r.mesas.join(',') : undefined));
@@ -216,8 +217,8 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
     cancelar(id, { origen = 'equipo' } = {}) {
       const db = cargar();
       const r = db.reservas.find(x => x.id === id);
-      if (!r) fail(`No hay ninguna reserva con id "${id}". Usa: node reservas.mjs buscar <nombre>`);
-      if (r.estado !== 'confirmada') fail(`La reserva ${r.id} ya estaba ${r.estado}.`);
+      if (!r) fail(`No booking with id "${id}". Use: node reservas.mjs buscar <name>`);
+      if (r.estado !== 'confirmada') fail(`Booking ${r.id} was already ${r.estado}.`);
       const horas = (momento(r.fecha, r.hora) - now()) / 36e5;
       r.estado = 'cancelada'; r.cancelada_en = now().toISOString();
       r.cancelacion_tardia = horas < POL.cancelacion_sin_cargo_horas;
@@ -229,9 +230,9 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
 
     espera({ fecha: f, hora: h, personas: p, nombre, telefono, notas, origen = 'equipo' }) {
       checkFecha(f); const n = personas(p);
-      if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Faltan --nombre y/o --telefono.');
+      if (!texto(nombre).trim() || !texto(telefono).trim()) fail('Missing --nombre and/or --telefono.');
       const t = turnoDe(f, h);
-      if (!t) fail(`A las ${h} del ${diaTxt(f)} ${f} no hay turno.`);
+      if (!t) fail(`There is no shift at ${h} on ${diaTxt(f)} ${f}.`);
       const db = cargar();
       const e = { id: nuevoId(db.espera, 'E', f), fecha: f, hora: h, turno: t.id, personas: n, nombre: texto(nombre).trim(), telefono: texto(telefono).trim(),
         notas: texto(notas), estado: 'esperando', origen, creada: now().toISOString() };
@@ -242,7 +243,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
       return { ok: true, entrada: e, turno: t, posicion };
     },
 
-    // Todas las reservas en cualquier estado (también las canceladas), por fecha y hora.
+    // All bookings in any status (cancelled ones too), by date and time.
     todas({ desde, hasta } = {}) {
       if (desde) checkFecha(desde);
       if (hasta) checkFecha(hasta);
@@ -251,7 +252,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
         .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora) || a.id.localeCompare(b.id));
     },
 
-    // Eventos del historial permanente, en el orden en que pasaron.
+    // Events from the permanent history, in the order they happened.
     eventos() {
       if (!fs.existsSync(HISTORIAL)) return [];
       return fs.readFileSync(HISTORIAL, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
@@ -268,7 +269,7 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
         .sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
     },
 
-    // Cuadro en Markdown con columnas fijas: Hora | Nombre | Personas | Mesa | Notas.
+    // Markdown booking sheet with fixed columns: Time | Name | Guests | Table | Notes.
     cuadro(f0, dias = 1) {
       checkFecha(f0);
       const db = cargar(), out = [];
@@ -276,18 +277,18 @@ export function abrirLibro({ datos = DATOS_POR_DEFECTO, ahora } = {}) {
         const f = sumarDias(f0, d);
         out.push(`## ${diaTxt(f)} ${f}\n`);
         const ts = turnosDe(f);
-        if (!ts.length) { out.push('Cerrado.\n'); continue; }
+        if (!ts.length) { out.push('Closed.\n'); continue; }
         for (const t of ts) {
           const o = ocupacion(db, f, t.id);
-          out.push(`### ${t.nombre} (${t.desde}) — ${o.ocup}/${AFORO} plazas · ${o.comensales} comensales · ${o.estado}\n`);
+          out.push(`### ${t.nombre} (${t.desde}) — ${o.ocup}/${AFORO} seats · ${o.comensales} guests · ${o.estado}\n`);
           if (o.rs.length) {
-            out.push('| Hora | Nombre | Personas | Mesa | Notas |\n|---|---|---|---|---|');
+            out.push('| Time | Name | Guests | Table | Notes |\n|---|---|---|---|---|');
             for (const r of o.rs.sort((a, b) => a.hora.localeCompare(b.hora) || a.mesas[0].localeCompare(b.mesas[0], 'es', { numeric: true })))
               out.push(`| ${r.hora} | ${r.nombre} | ${r.personas} | ${r.mesas.join('+')} | ${(r.notas || '—').replaceAll('|', '/')} |`);
-          } else out.push('Sin reservas.');
-          out.push(`\nMesas libres: ${o.libres.join(', ') || 'ninguna'}`);
+          } else out.push('No bookings.');
+          out.push(`\nFree tables: ${o.libres.join(', ') || 'none'}`);
           const esp = db.espera.filter(e => e.estado === 'esperando' && e.fecha === f && e.turno === t.id);
-          if (esp.length) out.push(`Lista de espera: ${esp.map(e => `${e.nombre} (${e.personas}, ${e.hora}, ${e.telefono})`).join('; ')}`);
+          if (esp.length) out.push(`Waiting list: ${esp.map(e => `${e.nombre} (${e.personas}, ${e.hora}, ${e.telefono})`).join('; ')}`);
           out.push('');
         }
       }

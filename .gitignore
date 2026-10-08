@@ -1,11 +1,11 @@
 node_modules/
 
-# Datos personales de clientes (nombres, teléfonos): nunca a GitHub.
-# El libro crea el archivo vacío si no existe.
+# Customers' personal data (names, phones): never to GitHub.
+# The register creates the empty file if it doesn't exist.
 .claude/skills/paalhu-reservas/reservas.json
-# El historial permanente de reservas y sus exportaciones a Excel.
+# The permanent booking history and its Excel exports.
 *-historial.jsonl
 reservas*.csv
 
-# Resultados de las pruebas de la skill
+# Skill test results
 .claude/skills/paalhu-reservas-workspace/

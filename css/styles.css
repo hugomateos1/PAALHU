@@ -1,4 +1,4 @@
-/* ===== PAALHU — hoja de estilos única para todo el sitio ===== */
+/* ===== PAALHU — single stylesheet for the whole site ===== */
 
 /* --- Base --- */
 * {
@@ -13,7 +13,7 @@ body {
     padding: 20px;
 }
 
-/* --- Estructura de página --- */
+/* --- Page structure --- */
 header {
     justify-content: flex-start;
     align-items: center;
@@ -47,14 +47,14 @@ footer {
     clear: both;
 }
 
-/* --- Listas del contenido (no las del nav) --- */
+/* --- Content lists (not the nav ones) --- */
 main ul {
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* --- Tablas (spice guide, opening hours) --- */
+/* --- Tables (spice guide, opening hours) --- */
 table {
     margin-left: auto;
     margin-right: auto;
@@ -66,7 +66,7 @@ caption {
     padding-bottom: 10px;
 }
 
-/* --- Formularios (reservas y pedidos) --- */
+/* --- Forms (bookings and orders) --- */
 form > p {
     text-align: center;
 }
@@ -97,7 +97,7 @@ button {
     cursor: pointer;
 }
 
-/* --- Galería de fotos (index) --- */
+/* --- Photo gallery (index) --- */
 .fotos {
     display: flex;
     gap: 20px;

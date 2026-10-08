@@ -1,12 +1,12 @@
-// PAALHU — chat de reservas. Añade un botón flotante que abre el chat (necesita server.js).
-// Uso: <link rel="stylesheet" href="css/chat.css"> y <script src="js/chat.js" defer></script>
+// PAALHU — booking chat. Adds a floating button that opens the chat (needs server.js).
+// Usage: <link rel="stylesheet" href="css/chat.css"> and <script src="js/chat.js" defer></script>
 (() => {
   const EMAIL = 'owners@paalhu.es';
   const SALUDO = "Hi! I'm the PAALHU booking assistant. I can check availability, book, change or cancel a table, or answer questions about the menu and opening hours.\n¡Hola! También puedes escribirme en español.";
   let sesion = null;
   try { sesion = sessionStorage.getItem('paalhu-chat'); } catch {}
 
-  // Crea un elemento: las claves "aria-*" y "role" van como atributos, el resto como propiedades.
+  // Creates an element: "aria-*" and "role" keys are set as attributes, the rest as properties.
   const el = (tag, props = {}, ...hijos) => {
     const n = document.createElement(tag);
     for (const [k, v] of Object.entries(props)) k.startsWith('aria-') || k === 'role' ? n.setAttribute(k, v) : (n[k] = v);
@@ -23,7 +23,7 @@
   const panel = el('section', { className: 'chat-panel', hidden: true, 'aria-label': 'PAALHU booking chat' },
     el('div', { className: 'chat-cabecera' }, el('strong', { textContent: 'PAALHU · Bookings' }), cerrar), lista, form);
 
-  // textContent (no innerHTML): lo que llega del servidor nunca se interpreta como HTML.
+  // textContent (not innerHTML): what comes from the server is never interpreted as HTML.
   const mensaje = (texto, tipo) => {
     const n = el('div', { className: `chat-msg ${tipo}`, textContent: texto });
     lista.append(n);
@@ -75,7 +75,7 @@
   });
 
   document.body.append(abrir, panel);
-  // Un enlace a "#chat" abre el chat directamente.
+  // A link to "#chat" opens the chat directly.
   if (location.hash === '#chat') mostrar();
   addEventListener('hashchange', () => { if (location.hash === '#chat') mostrar(); });
 })();
