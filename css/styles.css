@@ -54,6 +54,11 @@ main ul {
     margin-right: auto;
 }
 
+main ul.dish-list {
+    margin-left: 0;
+    margin-right: 0;
+}
+
 /* --- Tables (spice guide, opening hours) --- */
 table {
     margin-left: auto;
@@ -109,6 +114,7 @@ button {
 width: 95%;
 font-size: 1.1em;
 }
-.menu{
-    margin: 0%;
+.Starters{
+    display: flex;
+    justify-content: flex-start;
 }
