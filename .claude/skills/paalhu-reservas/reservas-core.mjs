@@ -1,5 +1,5 @@
 // Engine of the PAALHU booking register. Used by the CLI (reservas.mjs, for the team)
-// and the web server (server.js, customer chat).
+// and the website chat (src/controllers/chatController.js).
 // Reads config.json (tables, shifts, policy) and reads/writes the given JSON register.
 // Every creation, change, cancellation and waiting-list entry is also appended to the history
 // (<register>-historial.jsonl, one line per event), which is never rewritten: it is the permanent record.

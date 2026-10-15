@@ -1,54 +1,18 @@
-// PAALHU website server.
-//   npm start        ->  http://localhost:3000
-//
-// - Serves the website's static files.
-// - POST /api/chat: the customer booking chat, with a language model and tools over the booking register.
+// PAALHU booking chatbot: the assistant behind POST /api/chat (used by src/server.js).
+// - A language model talks to the customer, with tools over the booking register.
 //   It is the only way to book: there is no booking form or booking phone.
 //   Pilot: the chat has its full structure, but no model is connected (see askModel).
 // The booking register is the same one the team uses with the paalhu-reservas skill (reservas-core.mjs),
 // and every chat booking is also written to the permanent history.
-process.env.TZ = 'Europe/Madrid'; // shifts and "tonight" are Madrid time
-
-import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { abrirLibro, DatoError, cfg, diaTxt } from './.claude/skills/paalhu-reservas/reservas-core.mjs';
+import { abrirLibro, DatoError, cfg, diaTxt } from '../../.claude/skills/paalhu-reservas/reservas-core.mjs';
 
-const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const PORT = Number(process.env.PORT ?? 3000);
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..'); // repo root
 const register = abrirLibro({ datos: process.env.RESERVAS_DATOS || undefined });
 const REFERENCE = fs.readFileSync(path.join(ROOT, '.claude/skills/paalhu-assistant/reference.md'), 'utf8');
-
-// ---------- HTTP utilities ----------
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
-  '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon' };
-// The server code, dependencies and booking data are never served.
-const PRIVATE = /^\/(\.|node_modules\/|package(-lock)?\.json$|server\.js$)/;
-
-const json = (res, code, body) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(body)); };
-
-function readBody(req, limit = 16 * 1024) {
-  return new Promise((resolve, reject) => {
-    let data = '';
-    req.setEncoding('utf8');
-    req.on('data', c => { data += c; if (data.length > limit) { reject(new Error('body too large')); req.destroy(); } });
-    req.on('end', () => resolve(data));
-    req.on('error', reject);
-  });
-}
-
-function serveStatic(req, res) {
-  let url = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  if (url.endsWith('/')) url += 'index.html';
-  const file = path.resolve(ROOT, '.' + url);
-  if (PRIVATE.test(url) || !file.startsWith(ROOT + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
-    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('Not found');
-  }
-  res.writeHead(200, { 'content-type': TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream' });
-  fs.createReadStream(file).pipe(res);
-}
 
 // ---------- customer view ----------
 // What a customer sees never includes tables, or other customers' names or phones.
@@ -59,7 +23,7 @@ const customerReason = c => c.norma || c.cerrado || c.sinTurno || c.pasado ? c.m
 const digits = t => String(t ?? '').replace(/\D/g, '').slice(-9);
 const samePhone = (a, b) => digits(a).length >= 6 && digits(a) === digits(b);
 
-// ---------- chat /api/chat ----------
+// ---------- tools ----------
 const TOOLS = [
   { name: 'check_availability', description: 'Checks whether there is a table for N guests on a date and time. Books nothing. If it does not fit, returns alternatives with room.',
     input_schema: { type: 'object', additionalProperties: false, required: ['date', 'time', 'guests'],
@@ -135,6 +99,7 @@ function runTool(name, input) {
   }
 }
 
+// ---------- system prompt ----------
 // Keys are the day names used in config.json.
 const DAY_NAMES = { lunes: 'Monday', martes: 'Tuesday', miercoles: 'Wednesday', jueves: 'Thursday', viernes: 'Friday', sabado: 'Saturday', domingo: 'Sunday' };
 const shiftSchedule = Object.entries(DAY_NAMES)
@@ -170,13 +135,16 @@ ${shiftSchedule}
 Restaurant information:
 ${REFERENCE}`;
 
+// ---------- model ----------
 // Pilot: no model is connected, so the chat is disabled.
 // To enable it, implement askModel() with the chosen provider and set CHAT_ENABLED to true.
 // It must return { stop_reason: 'end_turn' | 'tool_use' | 'refusal', content: [{ type: 'text', text } | { type: 'tool_use', id, name, input }] }.
-const CHAT_ENABLED = false;
+export const CHAT_ENABLED = false;
 async function askModel({ system, tools, messages }) {
   throw new Error('No model is connected to the chat (pilot).');
 }
+
+// ---------- conversations ----------
 const sessions = new Map(); // id -> { messages, lastSeen, turns }
 const MAX_SESSIONS = 500, MAX_TURNS = 40, EXPIRY_MS = 2 * 3600e3, MAX_ITERATIONS = 8;
 
@@ -234,37 +202,19 @@ async function reply(s, text) {
   }
 }
 
-async function chat(req, res) {
-  if (!CHAT_ENABLED) return json(res, 503, { error: "The chat isn't available right now. Please try again in a little while." });
-  let body;
-  try { body = JSON.parse(await readBody(req)); } catch { return json(res, 400, { error: 'Invalid request.' }); }
+// Answers one chat request body ({ session, message }).
+// Returns [httpStatus, responseBody] so server.js only has to send it.
+export async function answer(body) {
   const text = String(body.message ?? '').trim().slice(0, 1000);
-  if (!text) return json(res, 400, { error: 'Please write a message.' });
+  if (!text) return [400, { error: 'Please write a message.' }];
   const [id, s] = session(body.session);
-  if (s.busy) return json(res, 429, { session: id, error: 'Please wait for the reply to your previous message.' });
-  if (++s.turns > MAX_TURNS) return json(res, 429, { session: id, error: 'This conversation is very long. Reload the page to start a new one.' });
+  if (s.busy) return [429, { session: id, error: 'Please wait for the reply to your previous message.' }];
+  if (++s.turns > MAX_TURNS) return [429, { session: id, error: 'This conversation is very long. Reload the page to start a new one.' }];
   s.busy = true;
   try {
-    json(res, 200, { session: id, reply: await reply(s, text) });
+    return [200, { session: id, reply: await reply(s, text) }];
   } catch (e) {
-    const error = "I can't reply right now. Please try again in a moment.";
     console.error('[chat]', e);
-    json(res, 502, { session: id, error });
+    return [502, { session: id, error: "I can't reply right now. Please try again in a moment." }];
   } finally { s.busy = false; }
 }
-
-// ---------- server ----------
-http.createServer(async (req, res) => {
-  try {
-    const route = new URL(req.url, 'http://x').pathname;
-    if (req.method === 'POST' && route === '/api/chat') return await chat(req, res);
-    if (req.method === 'GET' && route === '/api/chat/status') return json(res, 200, { enabled: CHAT_ENABLED });
-    if (req.method === 'GET' || req.method === 'HEAD') return serveStatic(req, res);
-    res.writeHead(405); res.end();
-  } catch (e) {
-    console.error(e);
-    if (!res.headersSent) { res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' }); res.end('Server error'); }
-  }
-}).listen(PORT, () => {
-  console.log(`PAALHU at http://localhost:${PORT}  ·  chat ${CHAT_ENABLED ? 'enabled' : 'disabled (pilot: no model connected)'}`);
-});

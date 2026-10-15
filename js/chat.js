@@ -1,4 +1,4 @@
-// PAALHU — booking chat. Adds a floating button that opens the chat (needs server.js).
+// PAALHU — booking chat. Adds a floating button that opens the chat (needs src/server.js).
 // Usage: <link rel="stylesheet" href="css/chat.css"> and <script src="js/chat.js" defer></script>
 (() => {
   const EMAIL = 'owners@paalhu.es';

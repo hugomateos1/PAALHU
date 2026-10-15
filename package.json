@@ -4,10 +4,10 @@
   "type": "module",
   "description": "PAALHU website with online bookings and a booking chat",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "src/server.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hugomateos1/PAALHU.git"
