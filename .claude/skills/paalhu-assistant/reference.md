@@ -46,13 +46,31 @@ Update this file whenever the website changes. `order_total.mjs` reads the price
 - Dal tadka — €10.50
 - Vegetable korma — €11.50
 
-### Rice, breads, desserts and drinks
+### Rice
 - Basmati rice — €2.90
+- Pilau rice — €3.50
+- Jeera rice — €3.50
+- Vegetable biryani — €9.90
+
+### Breads
 - Plain naan — €2.50
 - Garlic naan — €3.00
+- Cheese naan — €3.50
+- Peshwari naan — €3.50
+- Tandoori roti — €2.00
+- Paratha — €3.00
+
+### Desserts
 - Gulab jamun — €4.50
+- Rasmalai — €4.90
+- Gajar halwa — €4.50
+
+### Drinks
 - Mango lassi — €3.50
+- Sweet lassi — €3.00
+- Salted lassi — €3.00
 - Masala chai — €2.50
+- Fresh lime soda — €3.00
 
 ### Set menu — Monday to Friday, lunch only
 - Set menu — €12.90
