@@ -9,6 +9,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { abrirLibro, DatoError, cfg, diaTxt } from '../../.claude/skills/paalhu-reservas/reservas-core.mjs';
+import * as valid from '../validators.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..'); // repo root
 const register = abrirLibro({ datos: process.env.RESERVAS_DATOS || undefined });
@@ -54,9 +55,18 @@ function customersOwnBooking({ reference, phone }) {
 const notFound = { ok: false, reason: "I can't find any booking with that reference and phone. Please check the details." };
 const logWaitingList = list => { for (const e of list) console.log(`[NOTIFY WAITING LIST] now fits ${e.id} · ${e.nombre} · ${e.telefono} · ${e.personas} guests ${e.fecha} ${e.hora}`); };
 
+// Checks and cleans a tool's input with validators.js (fields that are absent are left alone).
+const FIELD_VALIDATORS = { date: valid.date, guests: valid.guests, name: valid.name, phone: valid.phone };
+function validateInput(input) {
+  const out = { ...input };
+  for (const [field, check] of Object.entries(FIELD_VALIDATORS)) if (out[field] !== undefined) out[field] = check(out[field]);
+  return out;
+}
+
 // Runs a tool and returns what the customer is allowed to see.
 // The booking register (reservas-core.mjs) uses Spanish field names, so inputs are mapped here.
-function runTool(name, input) {
+function runTool(name, rawInput) {
+  const input = validateInput(rawInput);
   switch (name) {
     case 'check_availability': {
       const c = register.disponibilidad(input.date, input.time, input.guests);
@@ -189,7 +199,7 @@ async function reply(s, text) {
       const results = toolCalls.map(u => {
         try { return { type: 'tool_result', tool_use_id: u.id, content: JSON.stringify(runTool(u.name, u.input)) }; }
         catch (e) {
-          if (!(e instanceof DatoError)) throw e;
+          if (!(e instanceof DatoError || e instanceof valid.ValidationError)) throw e;
           return { type: 'tool_result', tool_use_id: u.id, is_error: true, content: e.message.replace(/ Use: node .*$/, '') };
         }
       });

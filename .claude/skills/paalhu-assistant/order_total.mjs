@@ -5,9 +5,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as valid from '../../../src/validators.js';
 
 const ref = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'reference.md'), 'utf8');
-const menu = [...ref.matchAll(/^- (.+?) — €(\d+\.\d{2})$/gm)].map(([, name, price]) => ({ name, cents: Math.round(price * 100) }));
+const menu = [...ref.matchAll(/^- (.+?) — €(\d+\.\d{2})$/gm)].map(([, name, price]) => ({ name: valid.dish(name), cents: Math.round(valid.price(price) * 100) }));
 const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, ' ').replace(/\s+/g, ' ').trim();
 const eur = c => `€${(c / 100).toFixed(2)}`;
 
@@ -17,7 +18,9 @@ if (!items.length) { console.log('usage: node order_total.mjs "2x Dish name" ["1
 let total = 0, errors = [];
 for (const raw of items) {
   const m = raw.trim().match(/^(\d+)\s*x?\s+(.+)$/i);
-  const qty = m ? Number(m[1]) : 1, query = norm(m ? m[2] : raw);
+  let qty, query;
+  try { qty = valid.quantity(m ? m[1] : 1); query = norm(valid.dish(m ? m[2] : raw)); }
+  catch (e) { if (!(e instanceof valid.ValidationError)) throw e; errors.push(`"${raw}": ${e.message}`); continue; }
   const exact = menu.filter(d => norm(d.name) === query);
   const hits = exact.length ? exact : menu.filter(d => norm(d.name).includes(query));
   if (hits.length !== 1) {
