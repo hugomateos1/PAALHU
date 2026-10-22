@@ -23,7 +23,7 @@ Everything you say must come from these files. If something isn't there, don't i
 | `reservas-core.mjs` (in this folder) | The engine shared by `reservas.mjs` (team) and `src/controllers/chatController.js` (website chat). If you change the table logic, do it here. |
 | `../paalhu-assistant/reference.md` | The menu, prices, opening hours, address, spice levels and what is **not** published |
 
-**Customers can only book through the website chat** (`pages/booking.html` and the "Book by chat" button). There is no booking form or booking phone: never send a customer to book, change or cancel by phone. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `reservas.json`, so `cuadro` and `historial` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
+**Customers can book through the website chat** (`pages/booking.html` and the chat button), **by phone** (+34 627 41 09 35) **or by email** (owners@paalhu.es). There is no booking form. The chat registers its own bookings; phone and email bookings are registered by the team with `reservas.mjs`. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `reservas.json`, so `cuadro` and `historial` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
 
 ## The main rule: the script does the maths
 
@@ -110,13 +110,13 @@ Thank you for choosing PAALHU! Here is your booking:
 - Notes: [anything you told us]
 - Reference: R-20261003-001
 
-If you need to change or cancel it, use the chat on our website at least 24 hours in advance, with your reference and phone number.
+If you need to change or cancel it, let us know at least 24 hours in advance through the chat on our website, by phone (+34 627 41 09 35) or by email, with your reference and phone number.
 
 Welcome to our table!
 The PAALHU family
 ```
 
-- **In Spanish:** "Hola, [nombre]: ¡Gracias por elegir PAALHU! Te confirmamos tu reserva: Día / Hora / Personas / A nombre de / Notas / Referencia … Si necesitas cambiarla o cancelarla, hazlo con al menos 24 horas de antelación desde el chat de nuestra web, con tu referencia y tu teléfono. ¡Bienvenidos a nuestra mesa! La familia PAALHU".
+- **In Spanish:** "Hola, [nombre]: ¡Gracias por elegir PAALHU! Te confirmamos tu reserva: Día / Hora / Personas / A nombre de / Notas / Referencia … Si necesitas cambiarla o cancelarla, avísanos con al menos 24 horas de antelación desde el chat de nuestra web, por teléfono (+34 627 41 09 35) o por email, con tu referencia y tu teléfono. ¡Bienvenidos a nuestra mesa! La familia PAALHU".
 - **Change:** "We've changed your booking. Here's how it looks now:" followed by the new details.
 - **Cancellation:** confirm the cancellation, repeat the details of the cancelled booking and leave the door open ("We hope to see you soon"). If it is late (less than 24 h), there is no deposit and nothing is charged: don't threaten charges or scold.
 - **No room:** explain kindly, propose the script's alternatives and offer the waiting list. Don't give a reference until the booking is registered.
@@ -135,7 +135,7 @@ Answer from `reference.md` in one to three sentences, and finish by proposing th
   - That for the details of a dish they should write to owners@paalhu.es.
 
   You can point out the menu's vegetarian and vegan dishes (palak paneer, chana masala, dal tadka, vegetable korma), but without presenting them as safe for an allergy. If the person already has a booking, add the allergy to their notes with `cambiar --notas`.
-- **How to book:** only through the website chat. Don't give any phone number for bookings.
+- **How to book:** through the website chat, by phone (+34 627 41 09 35) or by email (owners@paalhu.es).
 - **Groups:** up to 12 are booked here; larger ones go to owners@paalhu.es.
 - **Cancellation policy:** free cancellation up to 24 h before, no deposit.
 - **Outside these tasks** (complaints, refunds, jobs, press, reviews): reply kindly and give owners@paalhu.es.

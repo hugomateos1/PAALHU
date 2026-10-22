@@ -1,7 +1,7 @@
 // PAALHU website server.
 //   npm start        ->  http://localhost:3000
 //
-// - Serves the website's static files.
+// - Serves the website's static files (the home page is pages/index.html; / redirects there).
 // - POST /api/chat: the customer booking chat. The assistant itself lives in controllers/chatController.js.
 process.env.TZ = 'Europe/Madrid'; // shifts and "tonight" are Madrid time
 
@@ -58,6 +58,8 @@ http.createServer(async (req, res) => {
     const route = new URL(req.url, 'http://x').pathname;
     if (req.method === 'POST' && route === '/api/chat') return await chat(req, res);
     if (req.method === 'GET' && route === '/api/chat/status') return json(res, 200, { enabled: CHAT_ENABLED });
+    // The home page lives in pages/, so the site root redirects there.
+    if (route === '/' || route === '/index.html') { res.writeHead(302, { location: '/pages/index.html' }); return res.end(); }
     if (req.method === 'GET' || req.method === 'HEAD') return serveStatic(req, res);
     res.writeHead(405); res.end();
   } catch (e) {

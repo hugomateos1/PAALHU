@@ -1,8 +1,8 @@
-// PAALHU — booking chat. Adds a floating button that opens the chat (needs src/server.js).
+// PAALHU — booking and ordering chat. Adds a floating button that opens the chat (needs src/server.js).
 // Usage: <link rel="stylesheet" href="css/chat.css"> and <script src="js/chat.js" defer></script>
 (() => {
   const EMAIL = 'owners@paalhu.es';
-  const SALUDO = "Hi! I'm the PAALHU booking assistant. I can check availability, book, change or cancel a table, or answer questions about the menu and opening hours.\n¡Hola! También puedes escribirme en español.";
+  const SALUDO = "Hi! I'm the PAALHU assistant. I can check availability, book, change or cancel a table, take a takeaway or delivery order, or answer questions about the menu and opening hours.\n¡Hola! También puedes escribirme en español.";
   let sesion = null;
   try { sesion = sessionStorage.getItem('paalhu-chat'); } catch {}
 
@@ -14,14 +14,14 @@
     return n;
   };
 
-  const abrir = el('button', { className: 'chat-abrir', type: 'button', textContent: '💬 Book by chat' });
+  const abrir = el('button', { className: 'chat-abrir', type: 'button', textContent: '💬 Book or order by chat' });
   const lista = el('div', { className: 'chat-mensajes', role: 'log', 'aria-live': 'polite' });
   const entrada = el('input', { type: 'text', maxLength: 1000, placeholder: 'Type your message…', autocomplete: 'off', 'aria-label': 'Message' });
   const enviar = el('button', { type: 'submit', textContent: 'Send' });
   const form = el('form', { className: 'chat-formulario' }, entrada, enviar);
   const cerrar = el('button', { className: 'chat-cerrar', type: 'button', textContent: '×', 'aria-label': 'Close chat' });
-  const panel = el('section', { className: 'chat-panel', hidden: true, 'aria-label': 'PAALHU booking chat' },
-    el('div', { className: 'chat-cabecera' }, el('strong', { textContent: 'PAALHU · Bookings' }), cerrar), lista, form);
+  const panel = el('section', { className: 'chat-panel', hidden: true, 'aria-label': 'PAALHU chat' },
+    el('div', { className: 'chat-cabecera' }, el('strong', { textContent: 'PAALHU · Bookings & orders' }), cerrar), lista, form);
 
   // textContent (not innerHTML): what comes from the server is never interpreted as HTML.
   const mensaje = (texto, tipo) => {
@@ -41,7 +41,7 @@
       if (!enabled) throw new Error();
       mensaje(SALUDO, 'casa');
     } catch {
-      mensaje(`The chat isn't available right now, so we can't take bookings at the moment. Please try again a little later, or email us at ${EMAIL}.`, 'aviso');
+      mensaje(`The chat isn't available right now. You can book or order by phone on +34 627 41 09 35 or by email at ${EMAIL}.`, 'aviso');
       entrada.disabled = enviar.disabled = true;
     }
   }

@@ -47,7 +47,7 @@ You speak for **PAALHU**, the Nahasapeemapetilon family's Indian restaurant at C
 
 ## Table bookings
 
-Bookings, changes, cancellations, table assignment, full shifts and the waiting list are handled by the **paalhu-reservas** skill (`../paalhu-reservas/`), which keeps the booking register. Use that skill for them; don't take bookings here. Guests can only book through the booking chat on the website: there is no bookings phone, so never send a guest to book by phone.
+Bookings, changes, cancellations, table assignment, full shifts and the waiting list are handled by the **paalhu-reservas** skill (`../paalhu-reservas/`), which keeps the booking register. Use that skill for them; don't take bookings here. Guests can book through the chat on the website, by phone (+34 627 41 09 35) or by email (owners@paalhu.es).
 
 ## Workflow: customer questions
 
