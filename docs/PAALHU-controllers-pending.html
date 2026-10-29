@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PAALHU: controllers still to build</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root { --ink: #2a1a12; --muted: #6b5a50; --brand: #4b1f0f; --gold: #d4a017; --paper: #fff; --soft: #FFF5E6; --line: #e6d8c6;
+          --done: #2f7a3d; --change: #a86b00; --missing: #b03a2e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 10pt/1.45 "Segoe UI", Arial, sans-serif; }
+  h1 { font: 700 22pt/1.15 Georgia, serif; color: var(--brand); margin: 0 0 4px; }
+  h2 { font: 700 14pt/1.2 Georgia, serif; color: var(--brand); margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--gold); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 16px 0 6px; color: var(--brand); break-after: avoid; }
+  p { margin: 6px 0; }
+  .sub { color: var(--muted); margin-bottom: 14px; }
+  code { font: 8.6pt Consolas, "Courier New", monospace; background: #f6efe6; padding: 0 3px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9pt; }
+  th { text-align: left; background: var(--brand); color: #fff; padding: 5px 7px; font-weight: 600; }
+  td { padding: 5px 7px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr { break-inside: avoid; }
+  tr:nth-child(even) td { background: #fdfaf5; }
+  .box { background: var(--soft); border-left: 4px solid var(--gold); padding: 8px 12px; margin: 10px 0; break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1px 6px; border-radius: 9px; color: #fff; white-space: nowrap; }
+  .done { background: var(--done); } .change { background: var(--change); } .missing { background: var(--missing); }
+  .fn { break-inside: avoid; margin: 0 0 12px; }
+  .fn table { margin: 4px 0 0; }
+  .fn td:first-child { width: 22%; font-weight: 600; color: var(--brand); }
+  ul { margin: 4px 0 8px; padding-left: 18px; } li { margin: 2px 0; }
+</style>
+</head>
+<body>
+
+<h1>PAALHU: controllers still to build</h1>
+<div class="sub">Website API · 29 October 2026 · Based on the endpoint worksheet (Book.xlsx) · Built step by step in one file: <code>src/controllers/controller.js</code></div>
+
+<h2>1. Where we are</h2>
+<table>
+  <tr><th>#</th><th>Screen</th><th>Endpoint</th><th>Function</th><th>Login</th><th>Status</th></tr>
+  <tr><td>1</td><td>Menu</td><td><code>GET /api/categories</code></td><td><code>getCategories</code></td><td>No</td><td><span class="tag done">Done</span> commit 00afd6b</td></tr>
+  <tr><td>2</td><td>Menu</td><td><code>GET /api/dishes</code></td><td><code>getDishes</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>3</td><td>Menu</td><td><code>GET /api/drinks</code></td><td><code>getDrinks</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>4</td><td>Menu</td><td><code>GET /api/menus</code></td><td><code>getMenus</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>5</td><td>Menu</td><td><code>GET /api/menus/:id</code></td><td><code>getMenu</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>6</td><td>Login</td><td><code>POST /api/clients</code></td><td><code>signUp</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>7</td><td>Login</td><td><code>POST /api/auth/login</code></td><td><code>login</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>8</td><td>Booking</td><td><code>GET /api/reservations/availability</code></td><td><code>getAvailability</code></td><td>No</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>9</td><td>Booking</td><td><code>POST /api/reservations</code></td><td><code>createReservation</code></td><td>Yes</td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>10</td><td>Booking</td><td><code>PATCH /api/reservations/:id</code></td><td><code>changeReservationTime</code></td><td>Yes</td><td><span class="tag missing">To do</span></td></tr>
+</table>
+<p><b>1 of 10 done.</b> The chat endpoints (<code>GET /api/chat/status</code>, <code>POST /api/chat</code>) and <code>GET /api/health</code> already exist and are not part of this list.</p>
+<div class="box"><b>Agreed.</b> Only the 10 endpoints of the worksheet, all in one controller file, with one router (<code>src/routes/api.js</code>, mounted on <code>/api</code>). The last row of the worksheet, <code>PATCH /api/booking/:id</code>, becomes <code>PATCH /api/reservations/:id</code> with body <code>{ time }</code>. Each function is written and checked one at a time.</div>
+
+<h2>2. How every controller function works</h2>
+<p>Each function follows the same four steps:</p>
+<ol>
+  <li><b>Read</b> the request: <code>req.query</code> (after the <code>?</code>), <code>req.params</code> (the <code>:id</code>) or <code>req.body</code> (the JSON sent).</li>
+  <li><b>Validate</b> it with the rules of the worksheet. A wrong value throws a <code>ValidationError</code> (<code>src/validators.js</code>), which <code>errorHandler.js</code> turns into <b>400</b> <code>{ error, field }</code>.</li>
+  <li><b>Use the data</b>: find, filter, save or change it.</li>
+  <li><b>Answer</b> with <code>res.json(...)</code> and the right status: 200, 201 created, 401 not logged in, 404 not found, 409 conflict.</li>
+</ol>
+
+<h2>3. What each remaining function must do</h2>
+
+<h3>Menu screen</h3>
+
+<div class="fn"><table>
+  <tr><th colspan="2">2 · GET /api/dishes → getDishes</th></tr>
+  <tr><td>Reads</td><td><code>?category=&amp;search=&amp;allergen=&amp;spice=&amp;sort=&amp;page=&amp;limit=</code></td></tr>
+  <tr><td>Does</td><td>Keeps dishes of that category id, whose name contains <code>search</code>, that do <b>not</b> contain <code>allergen</code>, with spice ≤ <code>spice</code>. Sorts (<code>-</code> = descending; default: category, then name) and returns one page.</td></tr>
+  <tr><td>Rules</td><td>page from 1 (default 1) · limit 1–100 (default 20) · spice 0–3 · allergen from a fixed list · sort only on known fields. Anything else → 400.</td></tr>
+  <tr><td>Answers</td><td>200 <code>{ data, page, limit, total, totalPages }</code></td></tr>
+  <tr><td>Needs</td><td>The <b>dish data</b>: id, category id, name, price, spice 0–3, allergens. Prices from <code>pages/menu.html</code>. The <code>page()</code> and <code>limit()</code> validators already exist.</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">3 · GET /api/drinks → getDrinks</th></tr>
+  <tr><td>Reads</td><td><code>?search=&amp;sort=&amp;page=&amp;limit=</code></td></tr>
+  <tr><td>Does</td><td>Same as dishes, with only search, sort (default: by name) and paging.</td></tr>
+  <tr><td>Answers</td><td>200 <code>{ data, page, limit, total, totalPages }</code></td></tr>
+  <tr><td>Needs</td><td>The 5 drinks with prices from the menu. Reuses the sorting and paging written for dishes.</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">4 · GET /api/menus → getMenus</th></tr>
+  <tr><td>Reads</td><td>Nothing. Short, fixed list, no paging.</td></tr>
+  <tr><td>Answers</td><td>200 with the menus: À la carte and Set menu (€12.90, Monday to Friday, lunch only).</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">5 · GET /api/menus/:id → getMenu</th></tr>
+  <tr><td>Reads</td><td><code>:id</code> in the URL.</td></tr>
+  <tr><td>Does</td><td>Returns one menu with its contents, for the set menu pop-up: its four courses (starter, main, dessert or coffee, drink) and their options from <code>pages/set-menu.html</code>.</td></tr>
+  <tr><td>Answers</td><td>200 the menu · 400 id not a whole number · 404 no menu with that id.</td></tr>
+</table></div>
+
+<h3>Login screen</h3>
+
+<div class="fn"><table>
+  <tr><th colspan="2">6 · POST /api/clients → signUp</th></tr>
+  <tr><td>Reads</td><td>Body <code>{ name, email, phone, password }</code></td></tr>
+  <tr><td>Rules</td><td>name 2–50 characters · valid email, not already registered · phone 9–15 digits, optional + · password at least 8 characters.</td></tr>
+  <tr><td>Does</td><td>Saves the client with the password <b>hashed</b> (never in plain text).</td></tr>
+  <tr><td>Answers</td><td>201 the client without the password · 400 invalid field · 409 email already registered.</td></tr>
+  <tr><td>Needs</td><td>A clients list, and password hashing (Node's built-in <code>crypto</code>, no extra package).</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">7 · POST /api/auth/login → login</th></tr>
+  <tr><td>Reads</td><td>Body <code>{ email, password }</code></td></tr>
+  <tr><td>Rules</td><td>valid email · password not empty and matching the stored one.</td></tr>
+  <tr><td>Answers</td><td>200 <code>{ token, client }</code> · 400 invalid field · 401 wrong email or password (same message for both).</td></tr>
+  <tr><td>Needs</td><td>A way to give and check tokens, and a small <b>login check</b> run before functions 9 and 10: it reads <code>Authorization: Bearer &lt;token&gt;</code> and answers 401 if it is missing or wrong.</td></tr>
+</table></div>
+
+<h3>Booking screen</h3>
+<p>These three use the booking engine that already exists (<code>.claude/skills/paalhu-reservas/reservas-core.mjs</code>): tables, shifts, joining tables and free-table checks. It is the same register the chat and the staff use, so a table booked on the website is taken for everyone.</p>
+
+<div class="fn"><table>
+  <tr><th colspan="2">8 · GET /api/reservations/availability → getAvailability</th></tr>
+  <tr><td>Reads</td><td><code>?date=&amp;guests=</code>, both required.</td></tr>
+  <tr><td>Does</td><td>Lists the arrival times of that day that still have a free table for that many guests.</td></tr>
+  <tr><td>Answers</td><td>200 the free times (empty when closed) · 400 missing or invalid date or guests (1–10).</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">9 · POST /api/reservations → createReservation (login)</th></tr>
+  <tr><td>Reads</td><td>Body <code>{ date, time, guests }</code>. Name and phone come from the logged-in client.</td></tr>
+  <tr><td>Rules</td><td>date YYYY-MM-DD, today or later, not a closed day · time HH:MM and one of that day's times · guests 1–10 and a table must be free.</td></tr>
+  <tr><td>Answers</td><td>201 the reservation · 400 invalid field or closed day · 401 not logged in · 409 no free table at that time.</td></tr>
+  <tr><td>Needs</td><td>The engine must remember which client made the reservation, so function 10 can check it.</td></tr>
+</table></div>
+
+<div class="fn"><table>
+  <tr><th colspan="2">10 · PATCH /api/reservations/:id → changeReservationTime (login)</th></tr>
+  <tr><td>Reads</td><td><code>:id</code> (like R-20261114-001) and body <code>{ time }</code>.</td></tr>
+  <tr><td>Does</td><td>Moves the client's own reservation to another time on the same day.</td></tr>
+  <tr><td>Answers</td><td>200 the changed reservation · 400 invalid time · 401 not logged in · 404 not found or not this client's · 409 cancelled, or no free table at the new time.</td></tr>
+</table></div>
+
+<h2>4. Decisions still open</h2>
+<table>
+  <tr><th>Topic</th><th>Question</th><th>Affects</th></tr>
+  <tr><td>Allergens</td><td>The restaurant does not publish allergens. Real data from the restaurant, a marked draft, or empty for now? A wrong allergen is a health risk.</td><td>2</td></tr>
+  <tr><td>Spice 0–3</td><td>The worksheet filters on 0–3, but customers choose 1–5 (spice guide). Proposal: 0–3 is how hot the dish comes; 1–5 stays the level asked for when ordering.</td><td>2</td></tr>
+  <tr><td>Where data lives</td><td>Menu data and clients at the top of <code>controller.js</code> (like the categories), or in a separate data file? Clients kept in memory are lost when the server restarts.</td><td>2–7</td></tr>
+  <tr><td>Reservation times</td><td>Which times count as "available slots": every 15 minutes inside each shift of <code>config.json</code>?</td><td>8–10</td></tr>
+  <tr><td>Today</td><td>The worksheet allows booking for today; the chat only allows from tomorrow. Keep them different?</td><td>8, 9</td></tr>
+  <tr><td>Group size</td><td>The worksheet says 1–10 guests; the booking engine allows up to 12. Use 10 on the website?</td><td>8, 9</td></tr>
+</table>
+
+<h2>5. Suggested order</h2>
+<ol>
+  <li><b>getDishes</b>, then <b>getDrinks</b> (same pattern, reuse the paging).</li>
+  <li><b>getMenus</b> and <b>getMenu</b> (fixed data, quick).</li>
+  <li><b>signUp</b> and <b>login</b>, plus the login check.</li>
+  <li><b>getAvailability</b>, then <b>createReservation</b> and <b>changeReservationTime</b>.</li>
+</ol>
+<p>Each step: write one function, add its line to <code>src/routes/api.js</code>, try it in the browser or Postman, commit.</p>
+
+</body>
+</html>
