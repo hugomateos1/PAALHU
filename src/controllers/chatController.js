@@ -214,7 +214,7 @@ async function reply(s, text) {
 }
 
 // Answers one chat request body ({ session, message }).
-// Returns [httpStatus, responseBody] so server.js only has to send it.
+// Returns [httpStatus, responseBody]; send() turns it into the HTTP answer.
 export async function answer(body) {
   const text = String(body.message ?? '').trim().slice(0, 1000);
   if (!text) return [400, { error: 'Please write a message.' }];
@@ -228,4 +228,18 @@ export async function answer(body) {
     console.error('[chat]', e);
     return [502, { session: id, error: "I can't reply right now. Please try again in a moment." }];
   } finally { s.busy = false; }
+}
+
+// ---------- HTTP handlers (routes/chat.js) ----------
+// GET /api/chat/status: js/chat.js hides the chat button while it's off.
+export function status(req, res) {
+  res.json({ enabled: CHAT_ENABLED });
+}
+
+// POST /api/chat
+export async function send(req, res) {
+  if (!CHAT_ENABLED) return res.status(503).json({ error: "The chat isn't available right now. Please try again in a little while." });
+  if (typeof req.body !== 'object' || req.body === null) return res.status(400).json({ error: 'Invalid request.' });
+  const [code, body] = await answer(req.body);
+  res.status(code).json(body);
 }

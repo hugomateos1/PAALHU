@@ -9,3 +9,6 @@ reservas*.csv
 
 # Skill test results
 .claude/skills/paalhu-reservas-workspace/
+
+# Local settings: port and, later, the session secret.
+.env

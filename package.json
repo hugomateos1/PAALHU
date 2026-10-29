@@ -4,7 +4,7 @@
   "type": "module",
   "description": "PAALHU website with online bookings and a booking chat",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node --env-file-if-exists=.env src/server.js"
   },
   "version": "1.0.0",
   "main": "src/server.js",
@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/hugomateos1/PAALHU/issues"
   },
-  "homepage": "https://github.com/hugomateos1/PAALHU#readme"
+  "homepage": "https://github.com/hugomateos1/PAALHU#readme",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
