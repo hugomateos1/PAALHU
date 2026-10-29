@@ -142,4 +142,4 @@ Answer from `reference.md` in one to three sentences, and finish by proposing th
 
 ## The website: touch it only if asked
 
-The pages `pages/*.html` and `css/styles.css` show public information. Only touch them if the team asks to change the visible opening hours or publish a full-shift notice. If opening hours, shifts or tables change, update `config.json`, `reference.md` and the affected page (`pages/opening_hours.html`) together, so all three say the same thing. A booking, a cancellation or a booking sheet doesn't touch the website.
+The pages `pages/*.html` and `css/styles.css` show public information. Only touch them if the team asks to change the visible opening hours or publish a full-shift notice. If opening hours, shifts or tables change, update `config.json`, `reference.md` and the affected page (the opening hours section of `pages/index.html`) together, so all three say the same thing. A booking, a cancellation or a booking sheet doesn't touch the website.
