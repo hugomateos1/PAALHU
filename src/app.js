@@ -15,6 +15,8 @@ app.use(logger);
 app.use(express.json({ limit: '16kb' }));
 
 // ---------- API ----------
+// Health check: answers as long as the server is up (for hosting / monitoring).
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/chat', chatRoutes);
 
 // ---------- website ----------
@@ -28,6 +30,7 @@ app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found.' });
   res.status(404).type('text').send('Not found');
 });
+// Registered last, after every route.
 app.use(errorHandler);
 
 export default app;
