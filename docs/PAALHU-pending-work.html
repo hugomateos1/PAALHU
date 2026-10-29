@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PAALHU: project status and pending work</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root { --ink: #2a1a12; --muted: #6b5a50; --brand: #4b1f0f; --gold: #d4a017; --paper: #fff; --soft: #FFF5E6; --line: #e6d8c6;
+          --done: #2f7a3d; --change: #a86b00; --missing: #b03a2e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 10pt/1.45 "Segoe UI", Arial, sans-serif; }
+  h1 { font: 700 22pt/1.15 Georgia, serif; color: var(--brand); margin: 0 0 4px; }
+  h2 { font: 700 14pt/1.2 Georgia, serif; color: var(--brand); margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--gold); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 16px 0 6px; color: var(--brand); break-after: avoid; }
+  p { margin: 6px 0; }
+  .sub { color: var(--muted); margin-bottom: 14px; }
+  code { font: 8.6pt Consolas, "Courier New", monospace; background: #f6efe6; padding: 0 3px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9pt; }
+  th { text-align: left; background: var(--brand); color: #fff; padding: 5px 7px; font-weight: 600; }
+  td { padding: 5px 7px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr { break-inside: avoid; }
+  tr:nth-child(even) td { background: #fdfaf5; }
+  .box { background: var(--soft); border-left: 4px solid var(--gold); padding: 8px 12px; margin: 10px 0; break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1px 6px; border-radius: 9px; color: #fff; white-space: nowrap; }
+  .done { background: var(--done); } .change { background: var(--change); } .missing { background: var(--missing); } .partial { background: #5b6b8a; }
+  .tree { font: 8.8pt/1.55 Consolas, "Courier New", monospace; background: #fbf7f1; border: 1px solid var(--line); padding: 10px 12px; }
+  .tree div { display: grid; grid-template-columns: 300px 1fr; gap: 8px; break-inside: avoid; }
+  .tree .c { font-family: "Segoe UI", Arial, sans-serif; font-size: 8.6pt; color: var(--muted); }
+  .d { color: var(--done); } .x { color: var(--change); } .m { color: var(--missing); } .del { color: var(--missing); text-decoration: line-through; }
+  .step { break-inside: avoid; margin: 10px 0; }
+  .step b.n { color: var(--brand); }
+  ul { margin: 4px 0 8px; padding-left: 18px; } li { margin: 2px 0; }
+  .legend span { margin-right: 14px; }
+</style>
+</head>
+<body>
+
+<h1>PAALHU: project status and pending work</h1>
+<div class="sub">Restaurant website with bookings and orders · 29 October 2026 · Based on the "From Screens to Endpoints" worksheet and the course project structure</div>
+
+<h2>1. Summary</h2>
+<table>
+  <tr><th style="width:30%">Part</th><th style="width:14%">Status</th><th>Notes</th></tr>
+  <tr><td>Public screens (home, menu, set menu, spice guide, opening hours, location, about us, booking)</td><td><span class="tag done">Done</span></td><td>Static HTML. Must move into <code>public/</code> (step 2)</td></tr>
+  <tr><td>Chat widget on the website</td><td><span class="tag partial">Built, off</span></td><td>No AI model connected yet (<code>CHAT_ENABLED = false</code>)</td></tr>
+  <tr><td>Booking logic</td><td><span class="tag done">Mostly done</span></td><td>In <code>reservas-core.mjs</code>, stored in a JSON file. <code>data/store.js</code> will share it</td></tr>
+  <tr><td>Express structure (<code>app.js</code>, <code>server.js</code>, <code>middleware/logger.js</code>, <code>routes/</code>)</td><td><span class="tag done">Done</span></td><td>Commit <code>bea95cb</code>. Two small changes left to match the course (step 1)</td></tr>
+  <tr><td>Data store (<code>src/data/store.js</code>)</td><td><span class="tag missing">Not started</span></td><td>In-memory store + seed data. Replaces the SQLite plan</td></tr>
+  <tr><td>Validators</td><td><span class="tag change">Written</span></td><td>All in one file, <code>src/validators.js</code>. Must be split into <code>src/validators/&lt;resource&gt;Validator.js</code></td></tr>
+  <tr><td>Endpoints</td><td><span class="tag change">2 of 16</span></td><td>Only <code>GET /api/chat/status</code> and <code>POST /api/chat</code></td></tr>
+  <tr><td>Orders</td><td><span class="tag missing">Not started</span></td><td>Only a script that prices an order; nothing saves orders</td></tr>
+  <tr><td>Pagination and filters</td><td><span class="tag missing">Not started</span></td><td>The <code>page</code> and <code>limit</code> validators already exist</td></tr>
+  <tr><td>Tests (Jest + supertest)</td><td><span class="tag missing">Not started</span></td><td><code>tests/&lt;resource&gt;.test.js</code></td></tr>
+  <tr><td>README.md and .env</td><td><span class="tag done">Done</span></td><td>Commit <code>183b101</code>. README needs updating at the end</td></tr>
+</table>
+
+<div class="box"><b>Agreed decisions.</b> The project follows the course structure exactly: <code>app.js</code>, <code>server.js</code>, <code>middleware/logger.js</code>, <code>routes/</code>, <code>controllers/</code>, <code>data/store.js</code>, <code>validators/</code>, the browser client in <code>public/</code> and tests in <code>tests/</code>. Data lives in an in-memory store with seed data (no database). There are no <code>models/</code>, no <code>db/</code>, no separate error-handler file and no staff login. Customers book and order through the chat, by phone (+34 627 41 09 35) or by email (owners@paalhu.es); the chat can only do what the endpoints can do. Validators only say what is wrong and in which field; the controllers and the error handler choose the HTTP status code.</div>
+
+<h2>2. Project structure</h2>
+<p>The whole repository, as it is today and as it has to end up.</p>
+<p class="legend"><span class="d">● exists</span><span class="x">● exists, needs changes</span><span class="m">● missing</span><span class="del">struck out</span> = delete</p>
+<div class="tree">
+<div><span>PAALHU/</span><span></span></div>
+<div><span class="x">├ package.json</span><span class="c">Add <code>"test"</code> script and the dev dependencies <code>jest</code> and <code>supertest</code></span></div>
+<div><span class="d">├ package-lock.json</span><span class="c">Exact installed versions (automatic, don't edit)</span></div>
+<div><span class="d">├ .gitignore</span><span class="c">node_modules, .env, customer data, booking history</span></div>
+<div><span class="x">├ README.md</span><span class="c">Update paths (<code>public/</code>), endpoints and <code>npm test</code></span></div>
+<div><span class="d">├ .env</span><span class="c">PORT (git-ignored)</span></div>
+<div><span>├ src/</span><span class="c">The server</span></div>
+<div><span class="x">│ ├ app.js</span><span class="c">Middleware pipeline, routers, 404, error handler <b>last</b>. Exports the app (no listen)</span></div>
+<div><span class="d">│ ├ server.js</span><span class="c">Time zone, port, <code>app.listen</code> only</span></div>
+<div><span>│ ├ middleware/</span><span></span></div>
+<div><span class="d">│ │ ├ logger.js</span><span class="c">Method, URL, status and time of each request (Session 15)</span></div>
+<div><span class="del">│ │ └ errorHandler.js</span><span class="c">Its code moves to the end of <code>app.js</code></span></div>
+<div><span>│ ├ routes/</span><span class="c">Thin routers: URL → controller function</span></div>
+<div><span class="d">│ │ ├ chat.js</span><span class="c">The 2 chat endpoints</span></div>
+<div><span class="m">│ │ ├ bookings.js</span><span class="c"></span></div>
+<div><span class="m">│ │ ├ waitingList.js</span><span class="c"></span></div>
+<div><span class="m">│ │ ├ orders.js</span><span class="c"></span></div>
+<div><span class="m">│ │ └ dishes.js</span><span class="c"></span></div>
+<div><span>│ ├ controllers/</span><span class="c">Handler logic: read the request, validate, call the store, answer</span></div>
+<div><span class="d">│ │ ├ chatController.js</span><span class="c">Chat assistant with <code>status</code> and <code>send</code></span></div>
+<div><span class="m">│ │ ├ bookingController.js</span><span class="c"></span></div>
+<div><span class="m">│ │ ├ waitingListController.js</span><span class="c"></span></div>
+<div><span class="m">│ │ ├ orderController.js</span><span class="c"></span></div>
+<div><span class="m">│ │ └ dishController.js</span><span class="c"></span></div>
+<div><span>│ ├ data/</span><span></span></div>
+<div><span class="m">│ │ └ store.js</span><span class="c">In-memory store + seed data (dishes, orders) and the shared booking engine</span></div>
+<div><span>│ ├ validators/</span><span class="c">Hand-written validation (no Zod yet)</span></div>
+<div><span class="m">│ │ ├ bookingValidator.js</span><span class="c">Split from today's <code>validators.js</code></span></div>
+<div><span class="m">│ │ ├ orderValidator.js</span><span class="c"></span></div>
+<div><span class="m">│ │ └ commonValidator.js</span><span class="c"></span></div>
+<div><span class="del">│ ├ validators.js</span><span class="c">Replaced by <code>validators/</code></span></div>
+<div><span class="del">│ └ models/</span><span class="c">Empty; not in the course structure</span></div>
+<div><span class="m">├ public/</span><span class="c">The browser client, served by Express</span></div>
+<div><span>│ ├ index.html … booking.html</span><span class="c">The 8 pages, moved from <code>pages/</code></span></div>
+<div><span>│ ├ styles.css, chat.css</span><span class="c">Moved from <code>css/</code></span></div>
+<div><span>│ ├ app.js</span><span class="c">The chat widget, moved from <code>js/chat.js</code></span></div>
+<div><span>│ └ img/</span><span class="c">Photos (dining room, family)</span></div>
+<div><span class="del">├ pages/, css/, js/, img/</span><span class="c">Empty once everything is in <code>public/</code></span></div>
+<div><span class="m">├ tests/</span><span class="c">Jest + supertest</span></div>
+<div><span class="m">│ ├ validators.test.js</span><span class="c"></span></div>
+<div><span class="m">│ ├ bookings.test.js</span><span class="c"></span></div>
+<div><span class="m">│ ├ waitingList.test.js</span><span class="c"></span></div>
+<div><span class="m">│ ├ orders.test.js</span><span class="c"></span></div>
+<div><span class="m">│ └ dishes.test.js</span><span class="c"></span></div>
+<div><span class="d">├ docs/</span><span class="c">This document (PDF and its HTML source)</span></div>
+<div><span class="d">└ .claude/skills/</span><span class="c">Tools for Claude and staff (not part of the website)</span></div>
+<div><span class="d">&nbsp; ├ paalhu-assistant/</span><span class="c"><code>SKILL.md</code>, <code>reference.md</code> (menu, prices, hours), <code>order_total_validator.mjs</code></span></div>
+<div><span class="d">&nbsp; └ paalhu-reservas/</span><span class="c"><code>SKILL.md</code>, <code>config.json</code> (tables, shifts, policy), <code>reservas-core.mjs</code> (booking engine), <code>reservas.mjs</code> (staff CLI), <code>evals/</code></span></div>
+</div>
+
+<h3>Course structure compared with ours</h3>
+<table>
+  <tr><th style="width:27%">Course file</th><th style="width:27%">Function</th><th style="width:11%">Status</th><th>What we need</th></tr>
+  <tr><td><code>src/app.js</code></td><td>Middleware pipeline, routers, 404, error handler last</td><td><span class="tag change">Change</span></td><td>Move the error handler in from <code>middleware/errorHandler.js</code>; serve <code>public/</code>; drop the <code>/</code> redirect</td></tr>
+  <tr><td><code>src/server.js</code></td><td><code>app.listen</code> only</td><td><span class="tag done">Done</span></td><td>—</td></tr>
+  <tr><td><code>src/middleware/logger.js</code></td><td>Logs every request</td><td><span class="tag done">Done</span></td><td>—</td></tr>
+  <tr><td><code>src/routes/&lt;resource&gt;.js</code></td><td>Thin router</td><td><span class="tag partial">1 of 5</span></td><td><code>chat.js</code> exists; add bookings, waitingList, orders, dishes</td></tr>
+  <tr><td><code>src/controllers/&lt;resource&gt;Controller.js</code></td><td>Handler logic, calls the store</td><td><span class="tag partial">1 of 5</span></td><td><code>chatController.js</code> exists; add the other four</td></tr>
+  <tr><td><code>src/data/store.js</code></td><td>In-memory store + seed data</td><td><span class="tag missing">Missing</span></td><td>See step 3</td></tr>
+  <tr><td><code>src/validators/&lt;resource&gt;Validator.js</code></td><td>Hand-written validation</td><td><span class="tag change">Change</span></td><td>Split <code>validators.js</code></td></tr>
+  <tr><td><code>public/</code></td><td>Browser client served by Express</td><td><span class="tag change">Change</span></td><td>Move <code>pages/</code>, <code>css/</code>, <code>js/</code>, <code>img/</code> in</td></tr>
+  <tr><td><code>tests/&lt;resource&gt;.test.js</code></td><td>Jest + supertest</td><td><span class="tag missing">Missing</span></td><td>See step 8</td></tr>
+</table>
+
+<h3>Endpoints we already have</h3>
+<table>
+  <tr><th style="width:22%">Endpoint</th><th>Function</th><th style="width:28%">Where in the code</th></tr>
+  <tr><td><code>GET /api/chat/status</code></td><td>Tells the website whether the chat is on: <code>{ enabled }</code>. The widget only shows itself when it is <code>true</code>. Today it is <code>false</code>.</td><td><code>routes/chat.js</code> → <code>status()</code> in <code>chatController.js</code></td></tr>
+  <tr><td><code>POST /api/chat</code></td><td>Receives <code>{ session, message }</code>, returns <code>{ session, reply }</code>. 200 reply · 400 empty message or bad JSON · 429 busy or conversation too long · 502 model failed · 503 chat off (always, today).</td><td><code>routes/chat.js</code> → <code>send()</code>, built on <code>answer()</code></td></tr>
+</table>
+
+<h2>3. What is already done</h2>
+<p><b>Screens.</b> All public pages, listing chat, phone and email for bookings and orders. Chat widget on the home and booking pages.</p>
+<p><b>Express (step 1, commit <code>bea95cb</code>).</b> <code>app.js</code> with logger, <code>express.json()</code> (16 KB), the chat router, static files from the four website folders only, JSON 404 under <code>/api/</code> and an error handler. <code>server.js</code> only starts it. <code>npm start</code> reads <code>.env</code> if it exists. Tested: pages, CSS, JS and images load; <code>src/</code>, <code>.claude/</code>, <code>node_modules/</code>, <code>package.json</code> and <code>.env</code> answer 404.</p>
+<p><b>Booking engine (<code>reservas-core.mjs</code>).</b> Availability with alternatives when a shift is full; create, change and cancel bookings; automatic table assignment, including adjacent tables; waiting list, shift occupancy, booking sheet, search; permanent history of every change. Used by the chat and by the staff command-line tool.</p>
+<table>
+  <tr><th style="width:28%">Entity</th><th style="width:14%">Status</th><th>Where</th></tr>
+  <tr><td>Booking, WaitingListEntry</td><td><span class="tag done">Done</span></td><td><code>reservas-core.mjs</code> → <code>reservas.json</code>. Channel stored only as <code>chat</code> / <code>equipo</code></td></tr>
+  <tr><td>HistoryEvent</td><td><span class="tag done">Done</span></td><td><code>reservas-historial.jsonl</code></td></tr>
+  <tr><td>Table, Shift</td><td><span class="tag done">Done</span></td><td><code>config.json</code></td></tr>
+  <tr><td>Dish</td><td><span class="tag partial">Partial</span></td><td>Only as text in <code>reference.md</code> and the menu HTML, no ids → seed data in <code>store.js</code></td></tr>
+  <tr><td>Order, OrderItem</td><td><span class="tag missing">Missing</span></td><td>→ array in <code>store.js</code></td></tr>
+</table>
+<p><b>Validators (<code>src/validators.js</code>).</b> Each returns the clean value or throws a <code>ValidationError</code> with a readable message and the wrong field. No HTTP codes inside. They will be split like this:</p>
+<table>
+  <tr><th style="width:28%">New file</th><th>Validators</th></tr>
+  <tr><td><code>bookingValidator.js</code></td><td><code>date</code>, <code>time</code>, <code>guests</code>, <code>name</code>, <code>phone</code>, <code>notes</code>, <code>table</code>, <code>reference</code>, <code>channel</code></td></tr>
+  <tr><td><code>orderValidator.js</code></td><td><code>dish</code>, <code>drink</code>, <code>quantity</code>, <code>price</code>, <code>spiceLevel</code>, <code>items</code>, <code>type</code>, <code>address</code>, <code>orderTime</code>, <code>orderStatus</code>, <code>statusChange</code></td></tr>
+  <tr><td><code>commonValidator.js</code></td><td><code>ValidationError</code>, <code>page</code>, <code>limit</code> (<code>login</code> is no longer needed)</td></tr>
+</table>
+
+<h2>4. What we need to do, in order</h2>
+
+<div class="step"><b class="n">Step 1 · Express structure</b> <span class="tag done">Done</span> + two changes<br>
+Move the error handler from <code>src/middleware/errorHandler.js</code> to the end of <code>app.js</code> (after the 404) and delete the file. Delete the empty <code>src/models/</code>. Everything else in step 1 is done.</div>
+
+<div class="step"><b class="n">Step 2 · Browser client in <code>public/</code></b><br>
+Move the 8 pages from <code>pages/</code>, <code>styles.css</code> and <code>chat.css</code> from <code>css/</code>, <code>js/chat.js</code> as <code>public/app.js</code>, and <code>img/</code> into <code>public/</code>. Fix the links in the pages (<code>../css/styles.css</code> → <code>styles.css</code>, <code>../js/chat.js</code> → <code>app.js</code>, <code>../img/…</code> → <code>img/…</code>). In <code>app.js</code>: one <code>express.static('public')</code>; <code>/</code> then serves <code>public/index.html</code> directly, so the redirect goes.</div>
+
+<div class="step"><b class="n">Step 3 · Data store (<code>src/data/store.js</code>)</b><br>
+One module that owns all the data, so controllers never touch files.
+<ul>
+  <li><b>Seed data:</b> dishes and drinks from <code>reference.md</code> with an id, name, category, price in cents and spice level.</li>
+  <li><b>Orders:</b> an in-memory array with an id counter. Create, list, get one, change status. The total is calculated here from dish prices.</li>
+  <li><b>Bookings and waiting list:</b> the store creates <b>one</b> booking engine (<code>abrirLibro()</code>) and exports it. The chat, the new controllers and the staff CLI all use the same rules.</li>
+  <li>Exports a <code>reset()</code> so each test starts from the seed data.</li>
+</ul></div>
+
+<div class="step"><b class="n">Step 4 · Validators per resource</b><br>
+Split <code>validators.js</code> into <code>src/validators/</code> as in section 3. Update the imports in <code>chatController.js</code>. The chat also starts checking <code>time</code>, <code>notes</code> and <code>reference</code>. Every new controller validates its body, params and query before calling the store.</div>
+
+<div class="step"><b class="n">Step 5 · Controllers and routes (14 new endpoints)</b></div>
+<table>
+  <tr><th style="width:4%">#</th><th style="width:22%">Controller</th><th style="width:33%">Endpoint</th><th>Function</th></tr>
+  <tr><td>1</td><td>bookingController</td><td><code>GET /api/bookings/shifts?date=</code></td><td>Shifts of a day and their occupancy</td></tr>
+  <tr><td>2</td><td></td><td><code>GET /api/bookings/availability?date=&amp;time=&amp;guests=</code></td><td>Is there a table, and alternatives if not</td></tr>
+  <tr><td>3</td><td></td><td><code>GET /api/bookings</code></td><td>List, with filters and pagination</td></tr>
+  <tr><td>4</td><td></td><td><code>GET /api/bookings/:id</code></td><td>One booking</td></tr>
+  <tr><td>5</td><td></td><td><code>POST /api/bookings</code></td><td>Create (phone or email) → 201</td></tr>
+  <tr><td>6</td><td></td><td><code>PATCH /api/bookings/:id</code></td><td>Change or cancel</td></tr>
+  <tr><td>7</td><td>waitingListController</td><td><code>GET /api/waiting-list</code></td><td>List, by date and status</td></tr>
+  <tr><td>8</td><td></td><td><code>POST /api/waiting-list</code></td><td>Add an entry → 201</td></tr>
+  <tr><td>9</td><td></td><td><code>PATCH /api/waiting-list/:id</code></td><td>Update (called, turned into a booking…)</td></tr>
+  <tr><td>10</td><td>orderController</td><td><code>GET /api/orders</code></td><td>List, with filters and pagination</td></tr>
+  <tr><td>11</td><td></td><td><code>GET /api/orders/:id</code></td><td>One order</td></tr>
+  <tr><td>12</td><td></td><td><code>POST /api/orders</code></td><td>Create an order → 201</td></tr>
+  <tr><td>13</td><td></td><td><code>PATCH /api/orders/:id</code></td><td>Change status</td></tr>
+  <tr><td>14</td><td>dishController</td><td><code>GET /api/dishes</code></td><td>Menu with ids and prices</td></tr>
+  <tr><td>—</td><td>chatController</td><td><code>GET /api/chat/status</code>, <code>POST /api/chat</code></td><td>Already exist</td></tr>
+</table>
+<p>Shifts and availability now live under <code>/api/bookings/…</code> so they fit in <code>routes/bookings.js</code>. Cancelling uses <code>PATCH</code> with <code>status: "cancelled"</code>, never <code>DELETE</code>: bookings and orders are never deleted.</p>
+
+<div class="step"><b class="n">Step 6 · Pagination and filters</b><br>
+<code>GET /api/bookings</code>: <code>page</code>, <code>limit</code> (20, max 100), <code>date</code> / <code>from</code> / <code>to</code>, <code>status</code>, <code>search</code>, <code>channel</code>, <code>sort</code>. <code>GET /api/orders</code>: <code>page</code>, <code>limit</code>, <code>date</code>, <code>status</code>, <code>channel</code>, <code>type</code>, <code>sort</code>. <code>GET /api/waiting-list</code>: <code>date</code>, <code>status</code>. Paginated answers return <code>{ data, page, limit, total }</code>.</div>
+
+<div class="step"><b class="n">Step 7 · Chat orders</b><br>
+Add a <code>create_order</code> tool to the chat that uses the store. Remove the rule that tells customers to call to confirm their order. Connect an AI model so the chat is switched on.</div>
+
+<div class="step"><b class="n">Step 8 · Tests (Jest + supertest)</b><br>
+<code>tests/validators.test.js</code> first, then one file per resource that calls the endpoints with <code>supertest(app)</code>. This is why <code>app.js</code> exports the app without <code>listen</code>. Add <code>jest</code> and <code>supertest</code> as dev dependencies and a <code>"test"</code> script.</div>
+
+<h2>5. Details to take into account</h2>
+<h3>Server and Express</h3>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>Order inside app.js</td><td>logger → <code>express.json()</code> → <code>express.static('public')</code> → routers → 404 → error handler. The error handler goes last and has 4 arguments <code>(err, req, res, next)</code>.</td></tr>
+  <tr><td>Express 5 and async</td><td>Errors thrown in async handlers reach the error handler on their own: no try/catch in every route.</td></tr>
+  <tr><td>Madrid time</td><td><code>process.env.TZ = 'Europe/Madrid'</code> stays the first line of <code>server.js</code>. Tests must set it too (Jest <code>setupFiles</code>), or dates shift.</td></tr>
+  <tr><td>Keep the chat working</td><td><code>public/app.js</code> relies on <code>GET /api/chat/status</code> returning <code>{ enabled }</code> and on the 503 while the chat is off. Same URLs, same answers.</td></tr>
+  <tr><td>Private files</td><td>Only <code>public/</code> is served. <code>src/</code>, <code>.claude/</code> (customer data), <code>node_modules/</code>, <code>package*.json</code> and <code>.env</code> are never reachable.</td></tr>
+  <tr><td>Jest with ES modules</td><td>The project uses <code>"type": "module"</code>. Run Jest as <code>node --experimental-vm-modules node_modules/jest/bin/jest.js</code> in the <code>"test"</code> script.</td></tr>
+  <tr><td>Tests and real data</td><td>The booking engine writes to <code>reservas.json</code>. In tests, set <code>RESERVAS_DATOS</code> to a temporary file so tests never touch real bookings.</td></tr>
+</table>
+
+<h3>Errors and status codes</h3>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>Who decides the code</td><td>Validators throw <code>ValidationError</code> (message + field); the store throws its own errors with a <code>status</code>. Only the error handler turns them into 400 / 404 / 409 / 500.</td></tr>
+  <tr><td>Error answer format</td><td>Always <code>{ error, field? }</code>. On 500, never send internal details (stack, file paths); log them on the server.</td></tr>
+  <tr><td>Success codes</td><td>200 for reads and changes, 201 for a POST that creates something.</td></tr>
+  <tr><td>Don't leak data</td><td>"Not found" must be the same whether the booking doesn't exist or the phone doesn't match (the chat already does this).</td></tr>
+</table>
+
+<h3>Data and privacy</h3>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>In-memory store</td><td>Orders are lost when the server restarts; that is accepted for the course. Bookings keep their JSON file because the engine already saves them.</td></tr>
+  <tr><td>Customer data off GitHub</td><td><code>reservas.json</code> and <code>*historial.jsonl</code> stay in <code>.gitignore</code>.</td></tr>
+  <tr><td>What customers see</td><td>Never table numbers, nor other customers' names or phones.</td></tr>
+  <tr><td>Nothing is deleted</td><td>Cancelling = <code>PATCH status: "cancelled"</code>. Every booking change is written to the history.</td></tr>
+  <tr><td>Channel</td><td><code>chat</code>, <code>phone</code> or <code>email</code> (today <code>chat</code> / <code>equipo</code>). Requests send <code>phone</code> or <code>email</code>; only the server sets <code>chat</code>.</td></tr>
+  <tr><td>Order total</td><td>Calculated in the store from the seed prices; never trust a total or price sent by the client. Work in cents.</td></tr>
+  <tr><td>Spanish field names</td><td>The booking engine uses <code>fecha</code>, <code>hora</code>, <code>personas</code>, <code>nombre</code>, <code>telefono</code>, <code>notas</code>, <code>estado</code>. The API uses English; the controller maps them, as <code>runTool</code> in <code>chatController.js</code> does today.</td></tr>
+</table>
+
+<h3>Business rules</h3>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>Group size</td><td>Maximum 12 guests (<code>config.json</code> → <code>grupo_maximo</code>). Bigger groups write to owners@paalhu.es.</td></tr>
+  <tr><td>Cancellation</td><td>Free with at least 24 h notice. No deposit.</td></tr>
+  <tr><td>Times</td><td>Bookings: arrival time inside a shift (<code>config.json</code> → <code>turnos</code>); the table is held for the whole shift. Orders: inside opening hours.</td></tr>
+  <tr><td>Set menu</td><td>Monday to Friday, lunch only.</td></tr>
+  <tr><td>Spice level</td><td>1 to 5 for every dish in an order.</td></tr>
+  <tr><td>Allergens</td><td>Not published per dish. Never say a dish is safe or free of an allergen; note allergies on the booking and refer to owners@paalhu.es.</td></tr>
+  <tr><td>Order status</td><td>received → confirmed → ready → delivered, or cancelled before delivered. Use <code>statusChange</code>.</td></tr>
+</table>
+
+<h3>Quality</h3>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>README.md</td><td>Install (<code>npm install</code>), run (<code>npm start</code>), test (<code>npm test</code>), an example <code>.env</code>, and the list of endpoints.</td></tr>
+  <tr><td>Language</td><td>Code, comments and API in English; the booking engine keeps its Spanish names. Customer messages in the customer's language.</td></tr>
+  <tr><td>Commits</td><td>Small commits with a message saying what changed (not just "commit").</td></tr>
+</table>
+
+<h2>6. Open points to decide</h2>
+<table>
+  <tr><th style="width:24%">Point</th><th>Detail</th></tr>
+  <tr><td>No staff login</td><td>The course structure has no login, so every endpoint is public. That means anyone could list bookings with names and phones. Decide whether that is acceptable for the course, or whether list endpoints should hide phones.</td></tr>
+  <tr><td>Worksheet vs. this plan</td><td>The entities sheet (<code>Book.xlsx</code>) has customer sign-up and login, an allergen filter, Table as its own entity, and <code>/api/categories</code>, <code>/api/drinks</code>, <code>/api/menus</code>. This plan keeps the earlier decisions (no customer accounts, no allergen data, tables assigned by the engine). Decide which endpoints from the sheet to add.</td></tr>
+  <tr><td>Maximum guests</td><td><code>guests</code> accepts 1–14, but the restaurant's maximum is 12. Change the validator to 12.</td></tr>
+  <tr><td>Same-day bookings</td><td>The <code>date</code> validator rejects today, so "a table for tonight" fails. The worksheet says only "not in the past". Decide which rule applies.</td></tr>
+  <tr><td>Hours in several places</td><td>Opening hours are in <code>reference.md</code>, the website and <code>orderValidator.js</code>; shifts in <code>config.json</code>. Decide whether to move them all into <code>config.json</code>.</td></tr>
+  <tr><td>File rename</td><td><code>order_total.mjs</code> was renamed to <code>order_total_validator.mjs</code>, but <code>SKILL.md</code>, <code>reference.md</code> and the script's usage text still use the old name.</td></tr>
+</table>
+
+</body>
+</html>
