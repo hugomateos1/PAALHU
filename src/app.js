@@ -5,6 +5,7 @@ import express from 'express';
 import logger from './middleware/logger.js';
 import errorHandler from './middleware/errorHandler.js';
 import chatRoutes from './routes/chat.js';
+import apiRoutes from './routes/api.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..'); // repo root, where the website lives
 
@@ -18,6 +19,7 @@ app.use(express.json({ limit: '16kb' }));
 // Health check: answers as long as the server is up (for hosting / monitoring).
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/chat', chatRoutes);
+app.use('/api', apiRoutes);
 
 // ---------- website ----------
 // The home page lives in pages/, so the site root redirects there.
