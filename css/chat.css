@@ -57,6 +57,7 @@
 .chat-msg {
     max-width: 85%;
     padding: 8px 12px;
+    border-radius: 14px;
     font-size: 16px;
     line-height: 1.45;
     white-space: pre-wrap;
@@ -89,8 +90,9 @@
 .chat-formulario input {
     flex: 1;
     min-width: 0;
-    padding: 8px;
+    padding: 8px 12px;
     border: 1px solid #d4a017;
+    border-radius: 20px;
 }
 .chat-formulario button {
     padding: 8px 14px;
