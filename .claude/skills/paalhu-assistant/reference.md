@@ -93,6 +93,14 @@ Mulligatawny soup, mango kulfi, kheer, coffee, water, soft drinks and beer appea
 | 4 | Hot | Real chilli heat. Bring a mango lassi. |
 | 5 | Very hot | For chilli lovers only. |
 
+The menu shows next to each dish how hot it comes from the kitchen: 🍃 = level 0, not spicy; 🌶️ repeated = levels 1 to 5. Customers still choose a level from 1 to 5 when they order. How each dish comes:
+- 0 (not spicy): papadum, basmati rice, pilau rice, jeera rice, every bread, every dessert
+- 1: vegetable samosa, onion bhaji, chicken pakora, chicken korma, butter chicken, palak paneer, dal tadka, vegetable korma
+- 2: chicken tikka, chicken tikka masala, prawn biryani, chana masala, vegetable biryani, mulligatawny soup
+- 3: lamb rogan josh
+- 4: madras curry
+- 5: vindaloo
+
 ## About us
 
 - Family-run by the Nahasapeemapetilon family since 2011. The father cooks, the mother welcomes the guests, and the team has nine people.

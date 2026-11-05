@@ -1,6 +1,6 @@
 # PAALHU — Practice 1
 
-Authors: Hugo Mateos, Pablo Cuenllas,Álvaro Morillo.
+Authors: Hugo Mateos, Pablo Cuenllas, Álvaro Morillo.
 
 Resources: dishes (main), drinks, setMenus, tables, customers, reservations, orders, reviews
 
@@ -29,7 +29,7 @@ Unknown fields are removed and never stored. Every field is required unless the 
 | name | string | required, 2–60 characters |
 | category | string | one of `starters`, `curries`, `vegetarian`, `rice`, `breads`, `desserts` |
 | price | number | from 0.50 to 50.00 |
-| spiceLevel | number | whole number from 0 (not spicy) to 5 (very hot) |
+| spiceLevel | number | whole number from 0 (not spicy 🍃) to 5 (very hot 🌶️🌶️🌶️🌶️🌶️), the same levels as the spice guide page |
 | vegetarian | boolean | `true` or `false` only |
 | available | boolean | `true` or `false` only (false = not served today) |
 

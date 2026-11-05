@@ -200,6 +200,11 @@ caption {
     margin: 0 auto;
     font-size: 1.1em;
 }
+/* Spice symbols next to each dish (🍃 or 🌶️ x level): never split across lines */
+.spice {
+    margin-left: 6px;
+    white-space: nowrap;
+}
 .Starters {
     display: flex;
     justify-content: flex-start;
