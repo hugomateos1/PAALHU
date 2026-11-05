@@ -5,7 +5,14 @@ import express from 'express';
 import logger from './middleware/logger.js';
 import errorHandler from './middleware/errorHandler.js';
 import chatRoutes from './routes/chat.js';
-import apiRoutes from './routes/api.js';
+import dishesRoutes from './routes/dishes.js';
+import drinksRoutes from './routes/drinks.js';
+import setMenusRoutes from './routes/setMenus.js';
+import tablesRoutes from './routes/tables.js';
+import customersRoutes from './routes/customers.js';
+import reservationsRoutes from './routes/reservations.js';
+import ordersRoutes from './routes/orders.js';
+import reviewsRoutes from './routes/reviews.js';
 
 // Repo root. ES modules have no __dirname, so it is worked out from this file's URL.
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,7 +27,15 @@ app.use(express.json({ limit: '16kb' }));
 // Health check: answers as long as the server is up (for hosting / monitoring).
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/chat', chatRoutes);
-app.use('/api', apiRoutes);
+// One router per resource, each under /api/<resource>.
+app.use('/api/dishes', dishesRoutes);
+app.use('/api/drinks', drinksRoutes);
+app.use('/api/setMenus', setMenusRoutes);
+app.use('/api/tables', tablesRoutes);
+app.use('/api/customers', customersRoutes);
+app.use('/api/reservations', reservationsRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 // ---------- website ----------
 // Everything the browser sees lives in public/. The home page is public/pages/index.html,
