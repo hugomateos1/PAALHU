@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PAALHU: remaining work for Practice 1</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm; }
+  :root { --ink: #2a1a12; --muted: #6b5a50; --brand: #4b1f0f; --gold: #d4a017; --paper: #fff; --soft: #FFF5E6; --line: #e6d8c6;
+          --done: #2f7a3d; --change: #a86b00; --missing: #b03a2e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 10pt/1.45 "Segoe UI", Arial, sans-serif; }
+  h1 { font: 700 22pt/1.15 Georgia, serif; color: var(--brand); margin: 0 0 4px; }
+  h2 { font: 700 14pt/1.2 Georgia, serif; color: var(--brand); margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--gold); break-after: avoid; }
+  h3 { font-size: 11pt; margin: 16px 0 6px; color: var(--brand); break-after: avoid; }
+  p { margin: 6px 0; }
+  .sub { color: var(--muted); margin-bottom: 14px; }
+  code { font: 8.6pt Consolas, "Courier New", monospace; background: #f6efe6; padding: 0 3px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9pt; }
+  th { text-align: left; background: var(--brand); color: #fff; padding: 5px 7px; font-weight: 600; }
+  td { padding: 5px 7px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr { break-inside: avoid; }
+  tr:nth-child(even) td { background: #fdfaf5; }
+  .box { background: var(--soft); border-left: 4px solid var(--gold); padding: 8px 12px; margin: 10px 0; break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1px 6px; border-radius: 9px; color: #fff; white-space: nowrap; }
+  .done { background: var(--done); } .change { background: var(--change); } .missing { background: var(--missing); }
+  .step { break-inside: avoid; margin: 0 0 12px; }
+  .step table { margin: 4px 0 0; }
+  .step td:first-child { width: 20%; font-weight: 600; color: var(--brand); }
+  ul, ol { margin: 4px 0 8px; padding-left: 18px; } li { margin: 2px 0; }
+  .check { break-inside: avoid; }
+  .check li { list-style: none; margin-left: -14px; }
+  .check li::before { content: "☐ "; color: var(--brand); }
+</style>
+</head>
+<body>
+
+<h1>PAALHU: remaining work for Practice 1</h1>
+<div class="sub">Web Application Programming (G247) · Hugo Mateos, Pablo Cuenllas, Álvaro Morillo · 5 November 2026 · Repository: <code>github.com/hugomateos1/PAALHU</code> (branch <code>main</code>)</div>
+
+<div class="box">This is the only planning document. The two older plans of 29 October (<code>PAALHU-controllers-pending</code> and <code>PAALHU-pending-work</code>) were deleted because they did not follow the Practice 1 PDF: login is not required, every resource needs full CRUD with its own router, controller and validator, and edits use <code>PUT</code>. They remain in the Git history (commit 2bba677).</div>
+
+<h2>1. Where we are</h2>
+<table>
+  <tr><th>Step</th><th>What</th><th>Status</th></tr>
+  <tr><td>1</td><td>README in the PDF template: authors and the 8 resources with every field and rule</td><td><span class="tag done">Done</span> commit 5691d7d</td></tr>
+  <tr><td>2</td><td>Front end in <code>public/</code> (pages/, css/, js/, img/), one <code>express.static</code>, JSON 404 for every unknown URL</td><td><span class="tag done">Done</span> commit 5691d7d</td></tr>
+  <tr><td>3</td><td><code>dishes</code> (main resource): store, validator, controller, router, full CRUD</td><td><span class="tag done">Done</span> commit b664d4f</td></tr>
+  <tr><td>4</td><td>The other 7 resources with full CRUD: drinks, setMenus, tables, customers, reservations, orders, reviews</td><td><span class="tag done">Done</span> commit b664d4f</td></tr>
+  <tr><td>—</td><td>Spice symbols (🍃 / 🌶️ × level) on the spice guide, menu and set menu, same scale as <code>spiceLevel</code></td><td><span class="tag done">Done</span> commit 5ba721f</td></tr>
+  <tr><td>5</td><td>Filter and stats on <code>dishes</code></td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>6</td><td>Front end connected to the API with <code>fetch()</code></td><td><span class="tag missing">To do</span></td></tr>
+  <tr><td>7</td><td>Postman collection, README completed, AI report</td><td><span class="tag missing">To do</span></td></tr>
+</table>
+
+<h3>What the API has now</h3>
+<p>8 resources, each under <code>/api/&lt;resource&gt;</code> with <code>GET /</code>, <code>GET /:id</code>, <code>POST /</code>, <code>PUT /:id</code>, <code>DELETE /:id</code>. All were tested: 200 · 201 + <code>Location</code> · 204 · 400 <code>{ errors: [{ field, message }] }</code> with every error at once · 404 for an unknown id (also for an id that is not a number). Unknown fields and any <code>id</code> sent by the client are ignored.</p>
+<table>
+  <tr><th>Layer</th><th>Where</th><th>Job</th></tr>
+  <tr><td>Router</td><td><code>src/routes/&lt;resource&gt;.js</code></td><td>Only maps method + path to a controller function</td></tr>
+  <tr><td>Controller</td><td><code>src/controllers/&lt;resource&gt;Controller.js</code></td><td>Reads <code>req</code>, calls the validator and the store, answers with the status code</td></tr>
+  <tr><td>Validator</td><td><code>src/validators/&lt;resource&gt;Validator.js</code> (+ <code>common.js</code>)</td><td>Checks the body, returns <code>{ valid, errors, value }</code>; never touches data</td></tr>
+  <tr><td>Store</td><td><code>src/data/store.js</code></td><td>The only file that touches the data (in memory, reset on every restart)</td></tr>
+</table>
+<p>The booking chat (<code>/api/chat</code>, <code>public/js/chat.js</code>) and the assistant skills in <code>.claude/</code> are extra: the PDF does not ask for them, but the team must be able to explain them in the defence.</p>
+
+<h2>2. Step 5 · Filter and stats on dishes</h2>
+<div class="step"><table>
+  <tr><th colspan="2">GET /api/dishes with query parameters</th></tr>
+  <tr><td>Reads</td><td><code>?search=&amp;category=&amp;vegetarian=&amp;available=</code>. All optional, and they combine: <code>?search=naan&amp;vegetarian=true</code>.</td></tr>
+  <tr><td>Does</td><td><code>search</code>: case-insensitive match on <code>name</code>. <code>category</code>: one of starters, curries, vegetarian, rice, breads, desserts. <code>vegetarian</code> / <code>available</code>: only the text <code>true</code> or <code>false</code> (query values always arrive as text).</td></tr>
+  <tr><td>Answers</td><td>200 with an array (possibly empty) · 400 <code>{ errors: [{ field, message }] }</code> for a category outside the list or a flag that is not true/false.</td></tr>
+  <tr><td>Where</td><td>A query validator (e.g. <code>validateDishQuery(query)</code> in <code>dishesValidator.js</code>), the filtering in <code>listDishes</code> of the controller. Filtering happens on the server.</td></tr>
+</table></div>
+<div class="step"><table>
+  <tr><th colspan="2">GET /api/dishes/stats</th></tr>
+  <tr><td>Answers</td><td>200 <code>{ total, vegetarian, available, averagePrice, byCategory: { starters: 5, curries: 7, … } }</code>, calculated on every request, never stored.</td></tr>
+  <tr><td>Watch out</td><td>In <code>src/routes/dishes.js</code> it must be declared <b>before</b> <code>/:id</code> (the comment marks the place); otherwise Express reads "stats" as an id.</td></tr>
+</table></div>
+
+<h2>3. Step 6 · Connect the pages to the API</h2>
+<p>Keep the HTML structure, classes and stylesheet; replace the data typed into the HTML with data from the API. Open the site only at <code>http://localhost:3000</code> (<code>npm start</code>), never by double-clicking.</p>
+<ol>
+  <li><b><code>public/js/api.js</code></b> with <code>apiRequest(method, path, body)</code>: the ONE place that calls <code>fetch</code>. It must check <code>response.ok</code> itself (fetch does not fail on 404 or 500) and return the data or the error list.</li>
+  <li><b>One script per page</b> in <code>public/js/</code>: find the element, ask the API, build one element per item with <code>createElement</code> + <code>textContent</code>, show them with <code>replaceChildren</code>.</li>
+  <li>Every page must show a <b>loading</b>, an <b>error</b> and an <b>empty</b> state.</li>
+</ol>
+<table>
+  <tr><th>Must have (PDF)</th><th>Suggestion for PAALHU</th></tr>
+  <tr><td>Every resource listed from its GET, no hard-coded rows left</td><td><code>menu.html</code>: dishes and drinks (chillies drawn from <code>spiceLevel</code>, so levels live only in <code>store.js</code>). <code>set-menu.html</code>: setMenus. Home: reviews.</td></tr>
+  <tr><td>Create (POST), edit (PUT) and delete (DELETE) for <b>every</b> resource, list updates without reloading</td><td>Customers do not edit tables or orders, so add staff pages, e.g. <code>pages/manage.html</code> (or one per resource) with a form and a list with Edit / Delete buttons for each resource. <code>booking.html</code>: a reservation form.</td></tr>
+  <tr><td>On a 400, each message next to its field; a client-side check first</td><td>A <code>&lt;span class="error"&gt;</code> under each input, filled from <code>errors[].field</code>.</td></tr>
+  <tr><td>Search box + at least one <code>&lt;select&gt;</code> or checkbox building the query string</td><td>On <code>menu.html</code>: search box, category <code>&lt;select&gt;</code>, "vegetarian" checkbox → <code>GET /api/dishes?…</code>.</td></tr>
+  <tr><td>Stats from <code>/api/dishes/stats</code> somewhere</td><td>A small summary on the home page.</td></tr>
+  <tr><td>Fixed <code>&lt;select&gt;</code> lists with exactly the validator's values</td><td>category, drink type, service, reservation status, order type and status: copy the lists from the validators.</td></tr>
+</table>
+
+<h2>4. Step 7 · Finish</h2>
+<ul>
+  <li><b>Postman:</b> export (Collection v2.1) to <code>postman/paalhu.postman_collection.json</code>. A collection variable <code>baseUrl = http://localhost:3000/api</code>; at least one full CRUD (list, get one, create, replace, delete) that runs in order on a fresh server (create first, then use the new id). Recommended: one invalid POST (400), the filter and <code>/stats</code>.</li>
+  <li><b>README:</b> one example request and response per endpoint; how to import and run the Postman collection; which page calls which endpoint; Design decisions (see section 5).</li>
+  <li><b>AI report</b> <code>AI/ai-report.docx</code>, 2 pages max, every member named: how AI was used (what was kept, changed or rejected, and why), advantages with real examples, one good prompt quoted in full with its weaker first version. Every claim needs a screenshot or a shared-conversation link.</li>
+</ul>
+
+<h2>5. Open decisions and small things</h2>
+<table>
+  <tr><th>Topic</th><th>What to do</th></tr>
+  <tr><td>Spice levels</td><td>The per-dish levels in <code>store.js</code> are guesses (e.g. vindaloo 5, madras 4, korma 1). Check them; until step 6 also change <code>menu.html</code>, <code>set-menu.html</code> and the assistant's <code>reference.md</code>. Mulligatawny soup (set menu only) is level 2.</td></tr>
+  <tr><td>Invalid query parameters</td><td>Decide: 400 or ignored. The plan above uses 400 (the PDF suggests it). Write the reason in Design decisions.</td></tr>
+  <tr><td>Design decisions to write</td><td>Pages live in <code>public/pages/</code> (not straight in <code>public/</code> as in the PDF) and <code>/</code> redirects there · where <code>express.static</code> is mounted and why · an id that is not a number answers 404 · why search and filter run on the server · reservations validate the format only (opening hours and free tables are not checked).</td></tr>
+  <tr><td>Table codes</td><td>Two tables can share a code (e.g. two M7). Optional: reject a repeated code with 409.</td></tr>
+  <tr><td>Data in memory</td><td>Everything created through the API is lost when the server restarts. Expected for Practice 1; the optional +0.5 bonus is a real SQLite or MongoDB behind the same <code>store.js</code> functions.</td></tr>
+</table>
+
+<h2>6. Suggested split</h2>
+<p>The PDF wants a commit history showing <b>every member contributing</b>, and in the defence (4 of the 10 points) each member must explain any file, including the others'. Steps 1–4 were committed by Hugo, so Pablo and Álvaro should commit the next parts.</p>
+<table>
+  <tr><th>Member</th><th>Suggested work</th></tr>
+  <tr><td>Hugo</td><td>Step 5 (filter + stats) · <code>api.js</code> · the menu page (dishes, drinks, search and filter) · stats on the home page</td></tr>
+  <tr><td>Pablo</td><td>Staff pages for tables, customers and reviews (list, create, edit, delete) · reviews on the home page · Postman collection</td></tr>
+  <tr><td>Álvaro</td><td>Booking page (reservation form) · staff pages for reservations, orders, set menus and drinks · README examples and Design decisions</td></tr>
+  <tr><td>All</td><td>AI report together · everyone reads and can explain the whole <code>src/</code> folder</td></tr>
+</table>
+
+<h2>7. Final checklist (grading, section 9 of the PDF)</h2>
+<ul class="check">
+  <li>API (2.5): 8 resources with correct CRUD ✔ · filter and <code>/stats</code> work · exact status codes ✔ · routes, controllers and store separated ✔ · unknown routes and errors return JSON ✔</li>
+  <li>Client (2.0): every resource listed and editable from the pages · fixed <code>&lt;select&gt;</code> lists match the validators · search and filter on the server · loading, error and empty states · styled and responsive</li>
+  <li>Validation &amp; errors (0.5): all messages at once ✔, shown next to their field · unknown fields and client ids ignored ✔ · invalid query parameters handled</li>
+  <li>Postman (0.5): one full CRUD, runs in order on a fresh server, uses <code>{{baseUrl}}</code></li>
+  <li>Repo &amp; README (0.5): runs from the README alone (<code>npm install</code>, <code>npm start</code>) · follows the template · every resource and endpoint documented · shared commit history</li>
+  <li>Defence (4.0): every member can explain every file and decision</li>
+  <li>AI report: 2 pages max, every member named, every claim with evidence</li>
+</ul>
+
+</body>
+</html>
