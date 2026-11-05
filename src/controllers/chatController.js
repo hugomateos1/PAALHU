@@ -231,7 +231,7 @@ export async function answer(body) {
 }
 
 // ---------- HTTP handlers (routes/chat.js) ----------
-// GET /api/chat/status: js/chat.js hides the chat button while it's off.
+// GET /api/chat/status: public/js/chat.js hides the chat button while it's off.
 export function status(req, res) {
   res.json({ enabled: CHAT_ENABLED });
 }

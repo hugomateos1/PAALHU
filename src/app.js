@@ -7,7 +7,8 @@ import errorHandler from './middleware/errorHandler.js';
 import chatRoutes from './routes/chat.js';
 import apiRoutes from './routes/api.js';
 
-const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..'); // repo root, where the website lives
+// Repo root. ES modules have no __dirname, so it is worked out from this file's URL.
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const app = express();
 app.disable('x-powered-by');
@@ -22,15 +23,14 @@ app.use('/api/chat', chatRoutes);
 app.use('/api', apiRoutes);
 
 // ---------- website ----------
-// The home page lives in pages/, so the site root redirects there.
-app.get(['/', '/index.html'], (req, res) => res.redirect(302, '/pages/index.html'));
-// Only these folders are served. Everything else (src/, .claude/ with customer data,
-// node_modules/, package*.json, .env) is never reachable and answers 404.
-for (const dir of ['pages', 'css', 'js', 'img']) app.use(`/${dir}`, express.static(path.join(ROOT, dir)));
-
+// Everything the browser sees lives in public/. The home page is public/pages/index.html,
+// so the site root redirects there.
+app.get('/', (req, res) => res.redirect(302, '/pages/index.html'));
+// Only this folder is served. Everything else (src/, .claude/ with customer data,node_modules/, package*.json, .env) is never reachable and answers 404.
+app.use(express.static(path.join(ROOT, 'public')));
+// Nothing above matched (no route, no file in public/): always a JSON 404.
 app.use((req, res) => {
-  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found.' });
-  res.status(404).type('text').send('Not found');
+  res.status(404).json({ error: 'Not found.' });
 });
 // Registered last, after every route.
 app.use(errorHandler);

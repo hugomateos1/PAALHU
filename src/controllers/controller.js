@@ -2,7 +2,7 @@
 // Each function reads the request, checks it, uses the data and sends the answer.
 
 // ---------- data ----------
-// Dish categories, in the order the menu shows them (same as pages/menu.html).
+// Dish categories, in the order the menu shows them (same as public/pages/menu.html).
 const categories = [
   { id: 1, name: 'Starters', order: 1 },
   { id: 2, name: 'Curries and main dishes', order: 2 },

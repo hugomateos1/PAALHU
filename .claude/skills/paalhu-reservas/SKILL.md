@@ -23,7 +23,7 @@ Everything you say must come from these files. If something isn't there, don't i
 | `reservas-core.mjs` (in this folder) | The engine shared by `reservas.mjs` (team) and `src/controllers/chatController.js` (website chat). If you change the table logic, do it here. |
 | `../paalhu-assistant/reference.md` | The menu, prices, opening hours, address, spice levels and what is **not** published |
 
-**Customers can book through the website chat** (`pages/booking.html` and the chat button), **by phone** (+34 627 41 09 35) **or by email** (owners@paalhu.es). There is no booking form. The chat registers its own bookings; phone and email bookings are registered by the team with `reservas.mjs`. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `reservas.json`, so `cuadro` and `historial` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
+**Customers can book through the website chat** (`public/pages/booking.html` and the chat button), **by phone** (+34 627 41 09 35) **or by email** (owners@paalhu.es). There is no booking form. The chat registers its own bookings; phone and email bookings are registered by the team with `reservas.mjs`. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `reservas.json`, so `cuadro` and `historial` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
 
 ## The main rule: the script does the maths
 
@@ -142,4 +142,4 @@ Answer from `reference.md` in one to three sentences, and finish by proposing th
 
 ## The website: touch it only if asked
 
-The pages `pages/*.html` and `css/styles.css` show public information. Only touch them if the team asks to change the visible opening hours or publish a full-shift notice. If opening hours, shifts or tables change, update `config.json`, `reference.md` and the affected page (the opening hours section of `pages/index.html`) together, so all three say the same thing. A booking, a cancellation or a booking sheet doesn't touch the website.
+The pages `public/pages/*.html` and `public/css/styles.css` show public information. Only touch them if the team asks to change the visible opening hours or publish a full-shift notice. If opening hours, shifts or tables change, update `config.json`, `reference.md` and the affected page (the opening hours section of `public/pages/index.html`) together, so all three say the same thing. A booking, a cancellation or a booking sheet doesn't touch the website.

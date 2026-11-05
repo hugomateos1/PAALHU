@@ -1,11 +1,11 @@
-# PAALHU — facts (source: the restaurant website, `pages/*.html`)
+# PAALHU — facts (source: the restaurant website, `public/pages/*.html`)
 
 Update this file whenever the website changes. `order_total.mjs` reads the price lines below. Keep the format `- Dish name — €0.00`.
 
 ## Contact
 
 - Address: Calle de Pirineos 55, 28039 Madrid, Spain
-- Bookings and takeaway/delivery orders: through the chat on the website (pages/booking.html), by phone or by email. There is no booking form.
+- Bookings and takeaway/delivery orders: through the chat on the website (public/pages/booking.html), by phone or by email. There is no booking form.
 - Phone (bookings, takeaway and delivery): +34 627 41 09 35
 - Email: owners@paalhu.es
 - Getting here: Metro Francos Rodríguez (line 7), 5 minutes' walk. Buses 44, 127 and 128 stop at the door.
