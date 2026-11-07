@@ -230,7 +230,39 @@ for every resource, so they are shown in full for `drinks`; after that, one body
 Values are cleaned before they are stored: the reservation above was sent with `"phone": "+34 611 22 33 44"`
 and stored as `"611223344"`; a `takeaway` order sent with an address is stored with `"address": ""`.
 
-_To do (step 5): examples for `GET /api/dishes?…` and `GET /api/dishes/stats`._
+**GET /api/dishes?search=naan&vegetarian=true** → `200` (filters combine; `search` ignores upper/lower case)
+
+```json
+[
+  { "id": 21, "name": "Plain naan", "category": "breads", "price": 2.5, "spiceLevel": 0, "vegetarian": true, "available": true },
+  { "id": 22, "name": "Garlic naan", "category": "breads", "price": 3, "spiceLevel": 0, "vegetarian": true, "available": true }
+]
+```
+
+(shortened: 4 dishes; `[]` if nothing matches)
+
+**GET /api/dishes?category=pizza&vegetarian=yes** → `400`, every invalid filter at once:
+
+```json
+{
+  "errors": [
+    { "field": "category", "message": "Category must be one of: starters, curries, vegetarian, rice, breads, desserts." },
+    { "field": "vegetarian", "message": "Vegetarian must be true or false." }
+  ]
+}
+```
+
+**GET /api/dishes/stats** → `200`, calculated from the current dishes on every request:
+
+```json
+{
+  "total": 29,
+  "vegetarian": 20,
+  "available": 29,
+  "averagePrice": 7.43,
+  "byCategory": { "starters": 5, "curries": 7, "vegetarian": 4, "rice": 4, "breads": 6, "desserts": 3 }
+}
+```
 
 ## Postman
 
@@ -250,6 +282,7 @@ checks `response.ok`, because `fetch` does not fail on a 400 or 404, and it alwa
 |---|---|---|
 | `pages/booking.html` | `js/booking.js` | `POST /api/reservations` |
 | `pages/manage.html` (staff home, linked from the home page footer) | | |
+| `pages/manage-dishes.html` | `js/manage-dishes.js` | `GET`, `POST /api/dishes` · `PUT`, `DELETE /api/dishes/:id` |
 | `pages/manage-reservations.html` | `js/manage-reservations.js` | `GET`, `POST /api/reservations` · `PUT`, `DELETE /api/reservations/:id` |
 | `pages/manage-orders.html` | `js/manage-orders.js` | `GET`, `POST /api/orders` · `PUT`, `DELETE /api/orders/:id` |
 | `pages/manage-set-menus.html` | `js/manage-set-menus.js` | `GET`, `POST /api/setMenus` · `PUT`, `DELETE /api/setMenus/:id` |
@@ -263,7 +296,7 @@ Shared front-end files:
 
 - `js/forms.js`: reads a form into a JSON body (checkbox → `true`/`false`, number input → number),
   runs the client-side check and shows each error in the `<span class="error" data-for="field">`
-  under its field.
+  under its field. A `<select>` with `data-type="number"` (the spice level) is sent as a number.
 - `js/crud.js`: `setupManager({ resource, singular, columns, check })` gives a staff page its list,
   create, edit and delete. Each `manage-*.js` only lists its columns.
 
@@ -289,7 +322,13 @@ so it updates without reloading the page.
 - **Invalid query parameters answer 400.** A category outside the list, or a flag that is not
   `true`/`false`, answers `400 { errors: [{ field, message }] }`, like an invalid body. Ignoring them
   would silently return a list the client did not ask for (e.g. every dish when the user typed a
-  wrong category).
+  wrong category). Three details: an empty value (`?category=`) means "no filter", because that is
+  what a `<select>` with an "All" option sends; a repeated parameter (`?category=rice&category=breads`)
+  is a 400, because we would not know which one to use; unknown parameters (`?foo=bar`) are ignored,
+  like unknown fields in a body.
+- **`/stats` is calculated, not stored.** It is worked out from the current dishes on every request,
+  so it can never disagree with the data. Its route is declared before `/:id` in
+  `src/routes/dishes.js`, because Express tries routes in order and `/:id` would read "stats" as an id.
 - **Validation on both sides.** The forms check the same rules as the validators first (HTML
   `required`, `min`, `max`, `pattern` and the validator's own message in `data-message`), so most
   mistakes are shown without a request. The server always checks again, because a client can be

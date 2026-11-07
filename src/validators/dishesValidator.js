@@ -51,3 +51,53 @@ export function validateDish(body) {
   };
   return { valid: true, errors: [], value };
 }
+
+// Validator for the query string of GET /api/dishes: ?search=&category=&vegetarian=&available=
+// Same shape as validateDish: { valid, errors: [{ field, message }], value }.
+//   value = only the filters that were given, already converted:
+//           { search: 'naan', category: 'breads', vegetarian: true, available: false }
+// Rules:
+// - Every parameter is optional. An empty value (?category=) means "no filter",
+//   which is what a <select> with an "All" option sends.
+// - Query values always arrive as text, so vegetarian/available must be the text "true" or "false".
+// - A repeated parameter (?category=rice&category=breads) arrives as an array and is an error.
+// - Unknown parameters are ignored, like unknown fields in a body.
+export function validateDishQuery(query) {
+  const q = query ?? {};
+  const errors = [];
+  const value = {};
+
+  // search: any text up to 60 characters (a dish name is at most 60)
+  if (q.search !== undefined) {
+    if (typeof q.search !== 'string' || q.search.trim().length > 60) {
+      errors.push({ field: 'search', message: 'Search must be a single text of at most 60 characters.' });
+    } else if (q.search.trim() !== '') {
+      value.search = q.search.trim();
+    }
+  }
+
+  // category: one of the fixed list
+  if (q.category !== undefined && q.category !== '') {
+    if (!CATEGORIES.includes(q.category)) {
+      errors.push({ field: 'category', message: `Category must be one of: ${CATEGORIES.join(', ')}.` });
+    } else {
+      value.category = q.category;
+    }
+  }
+
+  // vegetarian and available: the text "true" or "false", turned into a boolean
+  for (const field of ['vegetarian', 'available']) {
+    const text = q[field];
+    if (text === undefined || text === '') continue;
+    if (text !== 'true' && text !== 'false') {
+      errors.push({ field, message: `${field[0].toUpperCase()}${field.slice(1)} must be true or false.` });
+    } else {
+      value[field] = text === 'true';
+    }
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors, value: null };
+  }
+  return { valid: true, errors: [], value };
+}

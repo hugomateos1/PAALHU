@@ -14,14 +14,16 @@
 // - one <p class="form-message"> per form for messages that belong to no field (e.g. server down).
 
 // Builds the request body from the form. Values are converted to the type the API expects:
-// checkbox -> true/false, number input -> number (null if empty), everything else -> trimmed text.
+// checkbox -> true/false, number input or data-type="number" -> number (null if empty),
+// everything else -> trimmed text.
 export function readForm(form) {
   const body = {};
   for (const input of form.elements) {
     if (!input.name) continue; // buttons and fieldsets have no name
     if (input.type === 'checkbox') {
       body[input.name] = input.checked;
-    } else if (input.type === 'number') {
+    } else if (input.type === 'number' || input.dataset.type === 'number') {
+      // data-type="number" is for a <select> whose options are numbers (a select always gives text).
       body[input.name] = input.value === '' ? null : Number(input.value);
     } else {
       body[input.name] = input.value.trim();

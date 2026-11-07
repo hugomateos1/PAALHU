@@ -47,9 +47,9 @@
   <tr><td>3</td><td><code>dishes</code> (main resource): store, validator, controller, router, full CRUD</td><td><span class="tag done">Done</span> commit b664d4f</td></tr>
   <tr><td>4</td><td>The other 7 resources with full CRUD: drinks, setMenus, tables, customers, reservations, orders, reviews</td><td><span class="tag done">Done</span> commit b664d4f</td></tr>
   <tr><td>—</td><td>Spice symbols (🍃 / 🌶️ × level) on the spice guide, menu and set menu, same scale as <code>spiceLevel</code></td><td><span class="tag done">Done</span> commit 5ba721f</td></tr>
-  <tr><td>5</td><td>Filter and stats on <code>dishes</code></td><td><span class="tag missing">To do</span></td></tr>
-  <tr><td>6</td><td>Front end connected to the API with <code>fetch()</code>. <b>Done:</b> <code>api.js</code>, <code>forms.js</code>, <code>crud.js</code>, booking form, staff pages for reservations, orders, set menus and drinks. <b>Left:</b> menu, set menu, home (reviews + stats), staff pages for tables, customers and reviews.</td><td><span class="tag change">In progress</span> Álvaro, 7 Nov</td></tr>
-  <tr><td>7</td><td>Postman collection, README completed, AI report. <b>Done:</b> README examples, front-end table (pages done so far) and Design decisions. <b>Left:</b> Postman, README Postman section and filter/stats examples, AI report.</td><td><span class="tag change">In progress</span></td></tr>
+  <tr><td>5</td><td>Filter and stats on <code>dishes</code>: <code>validateDishQuery</code>, filtering in <code>listDishes</code>, <code>getDishStats</code>, <code>/stats</code> route before <code>/:id</code>. Invalid filters → 400.</td><td><span class="tag done">Done</span></td></tr>
+  <tr><td>6</td><td>Front end connected to the API with <code>fetch()</code>. <b>Done:</b> <code>api.js</code>, <code>forms.js</code>, <code>crud.js</code>, booking form, staff pages for dishes, reservations, orders, set menus and drinks. <b>Left:</b> menu, set menu, home (reviews + stats), staff pages for tables, customers and reviews.</td><td><span class="tag change">In progress</span></td></tr>
+  <tr><td>7</td><td>Postman collection, README completed, AI report. <b>Done:</b> README examples, front-end table (pages done so far) and Design decisions. <b>Left:</b> Postman, README Postman section, AI report.</td><td><span class="tag change">In progress</span></td></tr>
 </table>
 
 <h3>What the API has now</h3>
@@ -84,7 +84,7 @@
   <li><b>One script per page</b> in <code>public/js/</code>: find the element, ask the API, build one element per item with <code>createElement</code> + <code>textContent</code>, show them with <code>replaceChildren</code>.</li>
   <li>Every page must show a <b>loading</b>, an <b>error</b> and an <b>empty</b> state.</li>
 </ol>
-<h3>Already done (7 November, Álvaro)</h3>
+<h3>Already done</h3>
 <table>
   <tr><th>File</th><th>What it does</th></tr>
   <tr><td><code>public/js/api.js</code></td><td><code>apiRequest(method, path, body)</code>, the only <code>fetch</code>. Always returns <code>{ ok, status, data, errors }</code>; <code>errors</code> is always a list of <code>{ field, message }</code> (also for a 404, a 500 or the server being down). <b>Use it on every page; do not write another one.</b></td></tr>
@@ -92,7 +92,7 @@
   <tr><td><code>public/js/crud.js</code></td><td><code>setupManager({ resource, singular, columns, check })</code>: list with loading / error / empty states, create (POST), Edit (PUT), Delete (DELETE), list reloaded after each change.</td></tr>
   <tr><td><code>pages/booking.html</code> + <code>js/booking.js</code></td><td>Customer reservation form → <code>POST /api/reservations</code> (status always <code>confirmed</code>, no day before today). The chat information is kept under the form.</td></tr>
   <tr><td><code>pages/manage.html</code></td><td>Staff home, linked from the footer of the home page.</td></tr>
-  <tr><td><code>pages/manage-{reservations,orders,set-menus,drinks}.html</code> + <code>js/manage-*.js</code></td><td>One staff page per resource. The <code>&lt;select&gt;</code> lists copy the validators' constants (a comment in the HTML says which). Orders: address required only for delivery, also checked in the browser.</td></tr>
+  <tr><td><code>pages/manage-{dishes,reservations,orders,set-menus,drinks}.html</code> + <code>js/manage-*.js</code></td><td>One staff page per resource. Dishes: category <code>&lt;select&gt;</code>, spice level 0–5 shown as 🍃 / 🌶️ (a <code>&lt;select&gt;</code> with <code>data-type="number"</code>). The <code>&lt;select&gt;</code> lists copy the validators' constants (a comment in the HTML says which). Orders: address required only for delivery, also checked in the browser.</td></tr>
   <tr><td><code>css/styles.css</code></td><td>New rules at the end: forms, error messages, status messages, staff tables, small buttons, <code>[hidden]</code>.</td></tr>
 </table>
 <div class="box"><b>Pablo, staff pages for tables, customers and reviews:</b> copy <code>manage-drinks.html</code> and change the form fields (same rules as the validator, message in <code>data-message</code>); the script is only a <code>setupManager({...})</code> call with the columns, like <code>manage-drinks.js</code>. Then add the page to the nav of every staff page and to <code>manage.html</code> (a comment marks the place).</div>
@@ -102,17 +102,17 @@
 <table>
   <tr><th>Must have (PDF)</th><th>Suggestion for PAALHU</th></tr>
   <tr><td>Every resource listed from its GET, no hard-coded rows left</td><td><code>menu.html</code>: dishes and drinks (chillies drawn from <code>spiceLevel</code>, so levels live only in <code>store.js</code>). <code>set-menu.html</code>: setMenus. Home: reviews.</td></tr>
-  <tr><td>Create (POST), edit (PUT) and delete (DELETE) for <b>every</b> resource, list updates without reloading</td><td><span class="tag done">Done</span> reservations, orders, setMenus, drinks. <b>Left:</b> staff pages for tables, customers and reviews (Pablo, with <code>setupManager</code>) and for dishes.</td></tr>
+  <tr><td>Create (POST), edit (PUT) and delete (DELETE) for <b>every</b> resource, list updates without reloading</td><td><span class="tag done">Done</span> dishes, reservations, orders, setMenus, drinks. <b>Left:</b> staff pages for tables, customers and reviews (Pablo, with <code>setupManager</code>).</td></tr>
   <tr><td>On a 400, each message next to its field; a client-side check first</td><td><span class="tag done">Done</span> in <code>forms.js</code>; new pages get it by using <code>showErrors</code> / <code>setupManager</code>.</td></tr>
   <tr><td>Search box + at least one <code>&lt;select&gt;</code> or checkbox building the query string</td><td>On <code>menu.html</code>: search box, category <code>&lt;select&gt;</code>, "vegetarian" checkbox → <code>GET /api/dishes?…</code>.</td></tr>
   <tr><td>Stats from <code>/api/dishes/stats</code> somewhere</td><td>A small summary on the home page.</td></tr>
-  <tr><td>Fixed <code>&lt;select&gt;</code> lists with exactly the validator's values</td><td><span class="tag done">Done</span> drink type, service, reservation status, order type and status. <b>Left:</b> dish category (menu filter and dish staff page).</td></tr>
+  <tr><td>Fixed <code>&lt;select&gt;</code> lists with exactly the validator's values</td><td><span class="tag done">Done</span> drink type, service, reservation status, order type and status. Dish category on the dish staff page. <b>Left:</b> dish category on the menu filter.</td></tr>
 </table>
 
 <h2>4. Step 7 · Finish</h2>
 <ul>
   <li><b>Postman:</b> export (Collection v2.1) to <code>postman/paalhu.postman_collection.json</code>. A collection variable <code>baseUrl = http://localhost:3000/api</code>; at least one full CRUD (list, get one, create, replace, delete) that runs in order on a fresh server (create first, then use the new id). Recommended: one invalid POST (400), the filter and <code>/stats</code>.</li>
-  <li><b>README:</b> <span class="tag done">Done</span> examples for the five CRUD endpoints (in full for <code>drinks</code>, one body per other resource, one 400), the "Front end" section and Design decisions. <b>Left:</b> examples for the filter and <code>/stats</code> (after step 5), how to import and run the Postman collection, and the rows of the front-end table for the pages still to connect.</li>
+  <li><b>README:</b> <span class="tag done">Done</span> examples for the five CRUD endpoints (in full for <code>drinks</code>, one body per other resource, one 400), the filter (200 and 400) and <code>/stats</code>, the "Front end" section and Design decisions. <b>Left:</b> how to import and run the Postman collection, and the rows of the front-end table for the pages still to connect.</li>
   <li><b>AI report</b> <code>AI/ai-report.docx</code>, 2 pages max, every member named: how AI was used (what was kept, changed or rejected, and why), advantages with real examples, one good prompt quoted in full with its weaker first version. Every claim needs a screenshot or a shared-conversation link.</li>
 </ul>
 
@@ -120,28 +120,28 @@
 <table>
   <tr><th>Topic</th><th>What to do</th></tr>
   <tr><td>Spice levels</td><td>The per-dish levels in <code>store.js</code> are guesses (e.g. vindaloo 5, madras 4, korma 1). Check them; until step 6 also change <code>menu.html</code>, <code>set-menu.html</code> and the assistant's <code>reference.md</code>. Mulligatawny soup (set menu only) is level 2.</td></tr>
-  <tr><td>Invalid query parameters</td><td><span class="tag done">Decided</span> 400, reason written in the README's Design decisions. Step 5 must implement it that way.</td></tr>
+  <tr><td>Invalid query parameters</td><td><span class="tag done">Decided</span> 400, implemented and explained in the README. Empty value = no filter (for an "All" option), repeated parameter = 400, unknown parameters ignored.</td></tr>
   <tr><td>Design decisions</td><td><span class="tag done">Written</span> in the README: pages in <code>public/pages/</code> · where <code>express.static</code> is mounted · non-numeric id → 404 · search and filter on the server · invalid query → 400 · validation on both sides · <code>&lt;select&gt;</code> lists copy the validators · reservations validate the format only · separate staff pages, no login · data in memory. Add any new decision there.</td></tr>
   <tr><td>Table codes</td><td>Two tables can share a code (e.g. two M7). Optional: reject a repeated code with 409.</td></tr>
   <tr><td>Data in memory</td><td>Everything created through the API is lost when the server restarts. Expected for Practice 1; the optional +0.5 bonus is a real SQLite or MongoDB behind the same <code>store.js</code> functions.</td></tr>
 </table>
 
 <h2>6. Suggested split</h2>
-<p>The PDF wants a commit history showing <b>every member contributing</b>, and in the defence (4 of the 10 points) each member must explain any file, including the others'. Steps 1–4 were committed by Hugo, so Pablo and Álvaro should commit the next parts.</p>
-<p>Still unassigned: <code>set-menu.html</code> from <code>GET /api/setMenus</code>, and a staff page for dishes (main resource, needs the category <code>&lt;select&gt;</code>).</p>
+<p>The PDF wants a commit history showing <b>every member contributing</b>, and in the defence (4 of the 10 points) each member must explain any file, including the others'. Make sure every member commits part of the remaining work.</p>
+<p>Still unassigned: <code>set-menu.html</code> from <code>GET /api/setMenus</code> (the setMenus API stores name, price, service and flags only, not the dishes in the menu: decide together what the page shows).</p>
 <table>
   <tr><th>Member</th><th>Suggested work</th></tr>
-  <tr><td>Hugo</td><td>Step 5 (filter + stats) · the menu page (dishes, drinks, search and filter) · stats on the home page · README examples for the filter and <code>/stats</code>. (<code>api.js</code> was already written by Álvaro: use it.)</td></tr>
+  <tr><td>Hugo</td><td><span class="tag done">Done</span> Step 5 (filter, stats, query validation) · <code>api.js</code>. <b>Left:</b> the menu page (dishes, drinks, search and filter) · stats on the home page. <code>menu.html</code> only has to call <code>GET /api/dishes?…</code> (send empty values for "All") and the home page <code>GET /api/dishes/stats</code>.</td></tr>
   <tr><td>Pablo</td><td>Staff pages for tables, customers and reviews (with <code>setupManager</code>, see section 3) · reviews on the home page · Postman collection and its README section</td></tr>
-  <tr><td>Álvaro</td><td><span class="tag done">Done</span> <code>api.js</code>, <code>forms.js</code>, <code>crud.js</code> · booking page · staff pages for reservations, orders, set menus and drinks · README examples, "Front end" section and Design decisions. Free to help with set-menu.html or the dishes staff page.</td></tr>
+  <tr><td>Álvaro</td><td><span class="tag done">Done</span> Booking page · staff pages for reservations, orders, set menus and drinks · README examples and Design decisions. <b>Next:</b> <code>set-menu.html</code>.</td></tr>
   <tr><td>All</td><td>AI report together · everyone reads and can explain the whole <code>src/</code> folder</td></tr>
 </table>
 
 <h2>7. Final checklist (grading, section 9 of the PDF)</h2>
 <ul class="check">
-  <li>API (2.5): 8 resources with correct CRUD ✔ · filter and <code>/stats</code> work · exact status codes ✔ · routes, controllers and store separated ✔ · unknown routes and errors return JSON ✔</li>
+  <li>API (2.5): 8 resources with correct CRUD ✔ · filter and <code>/stats</code> work ✔ · exact status codes ✔ · routes, controllers and store separated ✔ · unknown routes and errors return JSON ✔</li>
   <li>Client (2.0): every resource listed and editable from the pages · fixed <code>&lt;select&gt;</code> lists match the validators · search and filter on the server · loading, error and empty states · styled and responsive</li>
-  <li>Validation &amp; errors (0.5): all messages at once ✔, shown next to their field ✔ (pages done so far) · unknown fields and client ids ignored ✔ · invalid query parameters handled</li>
+  <li>Validation &amp; errors (0.5): all messages at once ✔, shown next to their field ✔ (pages done so far) · unknown fields and client ids ignored ✔ · invalid query parameters handled ✔</li>
   <li>Postman (0.5): one full CRUD, runs in order on a fresh server, uses <code>{{baseUrl}}</code></li>
   <li>Repo &amp; README (0.5): runs from the README alone (<code>npm install</code>, <code>npm start</code>) · follows the template · every resource and endpoint documented · shared commit history</li>
   <li>Defence (4.0): every member can explain every file and decision</li>

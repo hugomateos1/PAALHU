@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dishes | PAALHU staff</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../css/styles.css">
+    <script type="module" src="../js/manage-dishes.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Dishes</h1>
+        <nav aria-label="Staff navigation">
+            <ul>
+                <li><a href="manage.html">Staff home</a></li>
+                <li><a href="manage-dishes.html" aria-current="page">Dishes</a></li>
+                <li><a href="manage-reservations.html">Reservations</a></li>
+                <li><a href="manage-orders.html">Orders</a></li>
+                <li><a href="manage-set-menus.html">Set menus</a></li>
+                <li><a href="manage-drinks.html">Drinks</a></li>
+                <li><a href="index.html">Back to the website</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2 id="form-title">New dish</h2>
+            <form id="item-form" class="item-form" novalidate>
+                <div class="field">
+                    <label for="f-name">Name</label>
+                    <input id="f-name" name="name" required minlength="2" maxlength="60" autocomplete="off"
+                           data-message="Name is required and must have 2 to 60 characters.">
+                    <span class="error" data-for="name"></span>
+                </div>
+                <div class="field">
+                    <label for="f-category">Category</label>
+                    <!-- Same list as CATEGORIES in src/validators/dishesValidator.js -->
+                    <select id="f-category" name="category" required
+                            data-message="Category must be one of: starters, curries, vegetarian, rice, breads, desserts.">
+                        <option value="starters">starters</option>
+                        <option value="curries">curries</option>
+                        <option value="vegetarian">vegetarian</option>
+                        <option value="rice">rice</option>
+                        <option value="breads">breads</option>
+                        <option value="desserts">desserts</option>
+                    </select>
+                    <span class="error" data-for="category"></span>
+                </div>
+                <div class="field">
+                    <label for="f-price">Price (&euro;)</label>
+                    <input id="f-price" name="price" type="number" required min="0.5" max="50" step="0.01"
+                           data-message="Price must be a number from 0.50 to 50.00.">
+                    <span class="error" data-for="price"></span>
+                </div>
+                <div class="field">
+                    <label for="f-spice">Spice level</label>
+                    <!-- Same scale as the spice guide (pages/spice_guide.html): 0 to 5.
+                         data-type="number": forms.js sends it as a number, not as text. -->
+                    <select id="f-spice" name="spiceLevel" data-type="number" required
+                            data-message="Spice level must be a whole number from 0 (not spicy) to 5 (very hot).">
+                        <option value="0">0 &mdash; 🍃 not spicy</option>
+                        <option value="1">1 &mdash; 🌶️ very mild</option>
+                        <option value="2">2 &mdash; 🌶️🌶️ mild</option>
+                        <option value="3">3 &mdash; 🌶️🌶️🌶️ medium</option>
+                        <option value="4">4 &mdash; 🌶️🌶️🌶️🌶️ hot</option>
+                        <option value="5">5 &mdash; 🌶️🌶️🌶️🌶️🌶️ very hot</option>
+                    </select>
+                    <span class="error" data-for="spiceLevel"></span>
+                </div>
+                <div class="field check">
+                    <input id="f-vegetarian" name="vegetarian" type="checkbox">
+                    <label for="f-vegetarian">Vegetarian</label>
+                    <span class="error" data-for="vegetarian"></span>
+                </div>
+                <div class="field check">
+                    <input id="f-available" name="available" type="checkbox" checked>
+                    <label for="f-available">Available (served today)</label>
+                    <span class="error" data-for="available"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Add dish</button>
+                    <button type="button" class="cancel-edit secondary" hidden>Cancel editing</button>
+                </div>
+                <p class="form-message" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+        <section>
+            <h2>All dishes</h2>
+            <p id="list-status" class="status loading" role="status" aria-live="polite">Loading…</p>
+            <div id="list" class="table-wrap"></div>
+        </section>
+    </main>
+</body>
+</html>

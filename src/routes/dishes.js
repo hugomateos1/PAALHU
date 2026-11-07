@@ -4,8 +4,9 @@ import * as controller from '../controllers/dishesController.js';
 
 const router = express.Router();
 
-// Step 5: GET /stats goes here, BEFORE /:id (otherwise Express reads "stats" as an id).
-router.get('/', controller.listDishes);
+router.get('/', controller.listDishes); // also ?search=&category=&vegetarian=&available=
+// /stats must be declared BEFORE /:id: Express tries routes in order, and /:id would read "stats" as an id.
+router.get('/stats', controller.getDishStats);
 router.get('/:id', controller.getDish);
 router.post('/', controller.createDish);
 router.put('/:id', controller.replaceDish);

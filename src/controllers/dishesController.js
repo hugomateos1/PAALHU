@@ -1,11 +1,52 @@
 // Dishes controller: one function per endpoint. Each one reads the request, validates it,
 // asks the store and answers with the right status code. It never touches the data directly.
 import * as store from '../data/store.js';
-import { validateDish } from '../validators/dishesValidator.js';
+import { validateDish, validateDishQuery, CATEGORIES } from '../validators/dishesValidator.js';
 
-// GET /api/dishes -> 200 with every dish
+// GET /api/dishes -> 200 with the dishes that match the filters (every dish if there are none)
+//   ?search=     part of the name, upper or lower case doesn't matter
+//   ?category=   one of CATEGORIES
+//   ?vegetarian= true | false
+//   ?available=  true | false
+// Filters combine: ?search=naan&vegetarian=true. 400 with every error if a filter is invalid.
+// Filtering happens here on the server, so the browser only receives what matches.
 export function listDishes(req, res) {
-  res.json(store.getAll('dishes'));
+  const result = validateDishQuery(req.query);
+  if (!result.valid) return res.status(400).json({ errors: result.errors });
+
+  const { search, category, vegetarian, available } = result.value;
+  let dishes = store.getAll('dishes');
+  if (search !== undefined) {
+    const text = search.toLowerCase();
+    dishes = dishes.filter(dish => dish.name.toLowerCase().includes(text));
+  }
+  if (category !== undefined) dishes = dishes.filter(dish => dish.category === category);
+  if (vegetarian !== undefined) dishes = dishes.filter(dish => dish.vegetarian === vegetarian);
+  if (available !== undefined) dishes = dishes.filter(dish => dish.available === available);
+
+  res.json(dishes);
+}
+
+// GET /api/dishes/stats -> 200 { total, vegetarian, available, averagePrice, byCategory }
+// Calculated from the current dishes on every request, never stored, so it always matches the data.
+// byCategory has every category, also those with 0 dishes. averagePrice has 2 decimals (0 if there are no dishes).
+export function getDishStats(req, res) {
+  const dishes = store.getAll('dishes');
+
+  const byCategory = {};
+  for (const category of CATEGORIES) byCategory[category] = 0;
+  for (const dish of dishes) byCategory[dish.category] += 1;
+
+  const priceSum = dishes.reduce((sum, dish) => sum + dish.price, 0);
+  const averagePrice = dishes.length === 0 ? 0 : Math.round((priceSum / dishes.length) * 100) / 100;
+
+  res.json({
+    total: dishes.length,
+    vegetarian: dishes.filter(dish => dish.vegetarian).length,
+    available: dishes.filter(dish => dish.available).length,
+    averagePrice,
+    byCategory,
+  });
 }
 
 // GET /api/dishes/:id -> 200 with the dish, 404 if there is none
