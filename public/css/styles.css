@@ -225,6 +225,151 @@ footer a {
     color: #f5c542;
 }
 
+/* --- Forms (booking page and staff pages) --- */
+/* "hidden" must win over display rules such as button { display: inline-block } */
+[hidden] {
+    display: none !important;
+}
+.item-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 6px 24px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+}
+.field.wide,
+.form-actions,
+.form-message {
+    grid-column: 1 / -1;
+}
+.field label {
+    font-weight: bold;
+    color: #4b1f0f;
+}
+.field small {
+    font-weight: normal;
+    color: #6b4a3a;
+}
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #d9c3a5;
+    border-radius: 8px;
+    background-color: #fff;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: #3B1F16;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+    outline: none;
+    border-color: #d4a017;
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.3);
+}
+.field [aria-invalid="true"] {
+    border-color: #b03a2e;
+}
+/* Checkbox fields: the box and its label on one line */
+.field.check {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    align-self: end;
+    padding-bottom: 8px;
+}
+.field.check input {
+    width: 20px;
+    height: 20px;
+    accent-color: #4b1f0f;
+}
+.field.check .error {
+    flex-basis: 100%;
+}
+/* The message under each field, filled from errors[].field */
+.error {
+    min-height: 1.4em;
+    color: #b03a2e;
+    font-size: 15px;
+}
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+}
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+button.secondary {
+    background-color: #fff;
+    color: #4b1f0f;
+}
+.form-message,
+.status {
+    margin: 10px 0 0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background-color: #FFF5E6;
+}
+.form-message:empty {
+    display: none;
+}
+.form-message.ok {
+    background-color: #e5f2e3;
+    color: #23552c;
+}
+.form-message.bad,
+.status.bad {
+    background-color: #f8e1de;
+    color: #8a2a20;
+}
+.status.loading,
+.status.empty {
+    font-style: italic;
+}
+
+/* --- Staff lists --- */
+.table-wrap {
+    overflow-x: auto;                /* wide tables scroll inside the card on phones */
+}
+.data-table {
+    font-size: 16px;
+}
+.data-table td.actions {
+    white-space: nowrap;
+}
+.btn-small {
+    padding: 4px 14px;
+    font-size: 15px;
+    border-width: 2px;
+    margin-right: 6px;
+}
+.btn-small.danger {
+    background-color: #8E2318;
+    color: #fff;
+}
+.btn-small.danger:hover {
+    background-color: #b03a2e;
+}
+nav a[aria-current="page"] {
+    color: #8E2318;
+    text-decoration: underline;
+}
+.staff-links li {
+    margin-bottom: 8px;
+}
+.note {
+    color: #6b4a3a;
+    font-style: italic;
+}
+
 /* --- Mobile: smaller title, photos stacked --- */
 @media (max-width: 700px) {
     header h1 {

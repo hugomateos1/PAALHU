@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/chat.css">
     <script src="../js/chat.js" defer></script>
+    <script type="module" src="../js/booking.js"></script>
 </head>
 <body>
     <header>
@@ -22,11 +23,64 @@
         </nav>
     </header>
     <main>
-        <p>You can book a table through our chat, by phone on <a href="tel:+34627410935">+34 627 41 09 35</a> or by email to <a href="mailto:owners@paalhu.es">owners@paalhu.es</a>.</p>
-        <p>In the chat, tell it the day, the time and how many you are, and it confirms your table straight away. If we're full, it suggests the nearest free times or adds you to the waiting list.</p>
-        <p><a href="#chat">&#128172; Open the booking chat</a></p>
-        <p>You can also check, change or cancel a booking through the chat, by phone or by email: just have your booking reference (R-&hellip;) and phone number to hand.</p>
-        <p>Groups of more than 12: please email <a href="mailto:owners@paalhu.es">owners@paalhu.es</a>.</p>
+        <section>
+            <h2>Book online</h2>
+            <p>Tell us your name, phone, the day, the time and how many you are. Groups of up to 12.</p>
+            <!-- POST /api/reservations (public/js/booking.js). novalidate: forms.js shows each message under its field. -->
+            <form id="booking-form" class="item-form" novalidate>
+                <div class="field">
+                    <label for="b-name">Your name</label>
+                    <input id="b-name" name="name" required minlength="3" maxlength="50" autocomplete="name"
+                           data-message="Name is required and must have 3 to 50 characters.">
+                    <span class="error" data-for="name"></span>
+                </div>
+                <div class="field">
+                    <label for="b-phone">Phone</label>
+                    <input id="b-phone" name="phone" type="tel" required autocomplete="tel"
+                           pattern="(\+34|0034)?[\s.\-\(\)]*(\d[\s.\-\(\)]*){9}"
+                           data-message="Phone must have 9 digits.">
+                    <span class="error" data-for="phone"></span>
+                </div>
+                <div class="field">
+                    <label for="b-date">Day</label>
+                    <input id="b-date" name="date" type="date" required
+                           data-message="Choose a day from today onwards.">
+                    <span class="error" data-for="date"></span>
+                </div>
+                <div class="field">
+                    <label for="b-time">Time</label>
+                    <input id="b-time" name="time" type="time" required
+                           data-message="Time must be written as HH:MM (24 h).">
+                    <span class="error" data-for="time"></span>
+                </div>
+                <div class="field">
+                    <label for="b-guests">Guests</label>
+                    <input id="b-guests" name="guests" type="number" required min="1" max="12" step="1" value="2"
+                           data-message="Guests must be a whole number from 1 to 12.">
+                    <span class="error" data-for="guests"></span>
+                </div>
+                <div class="field wide">
+                    <label for="b-notes">Anything we should know? <small>(optional: allergies, high chair&hellip;)</small></label>
+                    <textarea id="b-notes" name="notes" rows="3" maxlength="500"
+                              data-message="Notes must be text of at most 500 characters."></textarea>
+                    <span class="error" data-for="notes"></span>
+                </div>
+                <!-- A booking made by a customer always starts as "confirmed". -->
+                <input type="hidden" name="status" value="confirmed">
+                <div class="form-actions">
+                    <button type="submit">Book my table</button>
+                </div>
+                <p class="form-message" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+        <section>
+            <h2>Other ways to book</h2>
+            <p>You can also book through our chat, by phone on <a href="tel:+34627410935">+34 627 41 09 35</a> or by email to <a href="mailto:owners@paalhu.es">owners@paalhu.es</a>.</p>
+            <p>In the chat, tell it the day, the time and how many you are, and it confirms your table straight away. If we're full, it suggests the nearest free times or adds you to the waiting list.</p>
+            <p><a href="#chat">&#128172; Open the booking chat</a></p>
+            <p>You can also check, change or cancel a booking through the chat, by phone or by email: just have your booking reference (R-&hellip;) and phone number to hand.</p>
+            <p>Groups of more than 12: please email <a href="mailto:owners@paalhu.es">owners@paalhu.es</a>.</p>
+        </section>
     </main>
 </body>
 </html>

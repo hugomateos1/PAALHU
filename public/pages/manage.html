@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff area | PAALHU</title>
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Staff area</h1>
+        <p>Manage the restaurant's data. Every change is saved through the API at once.</p>
+        <nav aria-label="Staff navigation">
+            <ul>
+                <li><a href="manage.html" aria-current="page">Staff home</a></li>
+                <li><a href="manage-reservations.html">Reservations</a></li>
+                <li><a href="manage-orders.html">Orders</a></li>
+                <li><a href="manage-set-menus.html">Set menus</a></li>
+                <li><a href="manage-drinks.html">Drinks</a></li>
+                <li><a href="index.html">Back to the website</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>What do you want to manage?</h2>
+            <ul class="staff-links">
+                <li><a href="manage-reservations.html">Reservations</a> &mdash; table bookings: date, time, guests and status.</li>
+                <li><a href="manage-orders.html">Orders</a> &mdash; takeaway and delivery orders and their status.</li>
+                <li><a href="manage-set-menus.html">Set menus</a> &mdash; price, lunch or dinner, weekdays only, active.</li>
+                <li><a href="manage-drinks.html">Drinks</a> &mdash; the drinks on the menu and their prices.</li>
+                <!-- Pablo: add tables, customers and reviews here and in the nav above. -->
+            </ul>
+            <p class="note">The data lives in the server's memory: anything created here goes back to the starting data when the server restarts.</p>
+        </section>
+    </main>
+</body>
+</html>

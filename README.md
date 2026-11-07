@@ -142,7 +142,95 @@ Other endpoints  in the project:
 Errors: a 400 from a validator lists every problem at once: `{ errors: [ { field, message }, … ] }`.
 Unknown routes answer a JSON 404. Server errors answer a JSON 500 without a stack trace.
 
-_To do: one example request and response body per endpoint._
+### Examples
+
+All examples were run against a fresh server (`npm start`). The five CRUD endpoints behave the same
+for every resource, so they are shown in full for `drinks`; after that, one body per other resource.
+
+**GET /api/drinks** → `200`
+
+```json
+[
+  { "id": 1, "name": "Mango lassi", "type": "lassi", "price": 3.5, "alcoholic": false },
+  { "id": 2, "name": "Sweet lassi", "type": "lassi", "price": 3, "alcoholic": false }
+]
+```
+
+(shortened: the answer is the whole list, `[]` if there are none)
+
+**GET /api/drinks/1** → `200`
+
+```json
+{ "id": 1, "name": "Mango lassi", "type": "lassi", "price": 3.5, "alcoholic": false }
+```
+
+**GET /api/drinks/999** → `404`
+
+```json
+{ "error": "Drink not found." }
+```
+
+**POST /api/drinks** with `Content-Type: application/json`
+
+```json
+{ "name": "Kingfisher", "type": "beer", "price": 3.8, "alcoholic": true }
+```
+
+→ `201 Created`, header `Location: /api/drinks/6`
+
+```json
+{ "id": 6, "name": "Kingfisher", "type": "beer", "price": 3.8, "alcoholic": true }
+```
+
+**PUT /api/drinks/6** (the whole item, not only the changed field)
+
+```json
+{ "name": "Kingfisher", "type": "beer", "price": 4.2, "alcoholic": true }
+```
+
+→ `200`
+
+```json
+{ "id": 6, "name": "Kingfisher", "type": "beer", "price": 4.2, "alcoholic": true }
+```
+
+**DELETE /api/drinks/6** → `204 No Content` (empty body). The same request again → `404 { "error": "Drink not found." }`.
+
+**POST /api/reservations** with several wrong fields → `400`, with every problem at once:
+
+```json
+{ "name": "Jo", "phone": "123", "date": "2026-02-30", "time": "25:00", "guests": 0, "status": "maybe" }
+```
+
+```json
+{
+  "errors": [
+    { "field": "name", "message": "Name is required and must have 3 to 50 characters." },
+    { "field": "phone", "message": "Phone must have 9 digits." },
+    { "field": "date", "message": "Date must be a real date written as YYYY-MM-DD." },
+    { "field": "time", "message": "Time must be written as HH:MM (24 h)." },
+    { "field": "guests", "message": "Guests must be a whole number from 1 to 12." },
+    { "field": "status", "message": "Status must be one of: confirmed, seated, cancelled, no-show." }
+  ]
+}
+```
+
+**One item of each other resource** (what `GET /api/<resource>/:id` returns; `POST` and `PUT` take the same body without `id`):
+
+| Resource | Example |
+|---|---|
+| dishes | `{ "id": 1, "name": "Vegetable samosa", "category": "starters", "price": 4.9, "spiceLevel": 1, "vegetarian": true, "available": true }` |
+| setMenus | `{ "id": 1, "name": "Set menu", "price": 12.9, "service": "lunch", "weekdaysOnly": true, "active": true }` |
+| tables | `{ "id": 1, "code": "M1", "seats": 2, "joinable": true, "active": true }` |
+| customers | `{ "id": 1, "name": "Ana López", "email": "ana.lopez@example.com", "phone": "600111222", "newsletter": true }` |
+| reservations | `{ "id": 4, "name": "Laura Gómez", "phone": "611223344", "date": "2026-11-28", "time": "21:30", "guests": 3, "status": "confirmed", "notes": "" }` |
+| orders | `{ "id": 1, "name": "Lucía Martín", "phone": "600555666", "type": "delivery", "address": "Calle de Pirineos 20, 3ºB, Madrid", "total": 28.3, "status": "delivered" }` |
+| reviews | `{ "id": 1, "author": "Ana L.", "rating": 5, "comment": "The best butter chicken in Madrid. Lovely family.", "published": true }` |
+
+Values are cleaned before they are stored: the reservation above was sent with `"phone": "+34 611 22 33 44"`
+and stored as `"611223344"`; a `takeaway` order sent with an address is stored with `"address": ""`.
+
+_To do (step 5): examples for `GET /api/dishes?…` and `GET /api/dishes/stats`._
 
 ## Postman
 
@@ -150,14 +238,74 @@ _To do: how to import `postman/paalhu.postman_collection.json` and run it._
 
 ## Front end
 
-_To do: which page calls which endpoint._
+Open the site at http://localhost:3000 after `npm start`. The pages are not meant to be opened with a
+double click: they call the API on the same server.
+
+All the API calls go through one function, `apiRequest(method, path, body)` in `public/js/api.js`. It
+checks `response.ok`, because `fetch` does not fail on a 400 or 404, and it always returns
+`{ ok, status, data, errors }`. Pages build every element with `createElement` + `textContent`, never
+`innerHTML`, so data from the API is never read as HTML.
+
+| Page | Script | Endpoints |
+|---|---|---|
+| `pages/booking.html` | `js/booking.js` | `POST /api/reservations` |
+| `pages/manage.html` (staff home, linked from the home page footer) | | |
+| `pages/manage-reservations.html` | `js/manage-reservations.js` | `GET`, `POST /api/reservations` · `PUT`, `DELETE /api/reservations/:id` |
+| `pages/manage-orders.html` | `js/manage-orders.js` | `GET`, `POST /api/orders` · `PUT`, `DELETE /api/orders/:id` |
+| `pages/manage-set-menus.html` | `js/manage-set-menus.js` | `GET`, `POST /api/setMenus` · `PUT`, `DELETE /api/setMenus/:id` |
+| `pages/manage-drinks.html` | `js/manage-drinks.js` | `GET`, `POST /api/drinks` · `PUT`, `DELETE /api/drinks/:id` |
+| every page with the chat | `js/chat.js` | `GET /api/chat/status`, `POST /api/chat` |
+
+_To do: menu, set menu and home page (dishes, drinks, setMenus, reviews, `/stats`) and the staff pages
+for tables, customers and reviews._
+
+Shared front-end files:
+
+- `js/forms.js`: reads a form into a JSON body (checkbox → `true`/`false`, number input → number),
+  runs the client-side check and shows each error in the `<span class="error" data-for="field">`
+  under its field.
+- `js/crud.js`: `setupManager({ resource, singular, columns, check })` gives a staff page its list,
+  create, edit and delete. Each `manage-*.js` only lists its columns.
+
+Every list shows a loading message while it waits, an error message if the request fails, and an
+"empty" message if the API returns `[]`. After a create, edit or delete the list is asked for again,
+so it updates without reloading the page.
 
 ## Design decisions
 
-_To do:_
-- Invalid query parameters: rejected with 400 or ignored? Why?
-- Where express.static is mounted in app.js, and why there.
-- Why searching and filtering happen on the server.
+- **Pages in `public/pages/`, not straight in `public/`.** The PDF puts the HTML files in `public/`;
+  we keep them in `public/pages/` next to `css/`, `js/` and `img/`, so the folder stays tidy. `/`
+  redirects to `/pages/index.html`.
+- **Where `express.static` is mounted.** In `src/app.js`, after every `/api` router and before the
+  JSON 404. An API path is therefore never answered by a file, and only `public/` is served: `src/`,
+  `.claude/`, `node_modules/`, `package.json` and `.env` are never reachable. Anything that matches
+  neither a route nor a file gets the JSON 404.
+- **An id that is not a number answers 404.** `GET /api/drinks/abc` looks for the item with id
+  `Number('abc')`, finds none and answers `404 { "error": "Drink not found." }`. A 400 would also be
+  defensible; we chose 404 because, for the client, both mean "there is no item at this URL".
+- **Search and filter run on the server.** `GET /api/dishes?search=&category=&vegetarian=&available=`
+  filters in the controller and only sends what matches. The browser downloads less, every client
+  (website, Postman, chat) gets the same rules, and the page never needs the full list to search it.
+- **Invalid query parameters answer 400.** A category outside the list, or a flag that is not
+  `true`/`false`, answers `400 { errors: [{ field, message }] }`, like an invalid body. Ignoring them
+  would silently return a list the client did not ask for (e.g. every dish when the user typed a
+  wrong category).
+- **Validation on both sides.** The forms check the same rules as the validators first (HTML
+  `required`, `min`, `max`, `pattern` and the validator's own message in `data-message`), so most
+  mistakes are shown without a request. The server always checks again, because a client can be
+  bypassed (Postman, curl); its 400 messages are shown under the same fields.
+- **Fixed `<select>` lists copy the validators.** Drink type, set menu service, reservation status
+  and order type and status have exactly the values of the lists in `src/validators/`, with a
+  comment in the HTML saying which constant they copy.
+- **Reservations validate the format only.** The API checks that the date is real, the time is
+  `HH:MM` and there are 1 to 12 guests, but not opening hours or free tables. Staff may also record
+  past or unusual bookings. The customer booking page adds one extra rule in the browser: no day
+  before today. A booking made from that page always starts as `confirmed`.
+- **Staff pages are separate from the customer pages.** Customers do not edit tables or orders, so
+  the create, edit and delete forms live under `pages/manage*.html`, linked from the home page
+  footer. There is no login, as Practice 1 does not ask for one.
+- **Data in memory.** `src/data/store.js` is the only file that touches the data. Everything
+  created through the API is lost when the server restarts, which is expected for Practice 1.
 
 ## AI
 
