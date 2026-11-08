@@ -102,3 +102,25 @@
     opacity: 0.6;
     cursor: wait;
 }
+
+/* --- Phones: the chat fills the screen instead of a small floating box --- */
+@media (max-width: 700px) {
+    .chat-abrir {
+        right: 12px;
+        bottom: 12px;
+    }
+    .chat-panel {
+        inset: 0;                    /* top, right, bottom and left all 0 */
+        width: 100%;
+        height: 100%;
+        height: 100dvh;              /* the visible height, also when the keyboard is open */
+        border: none;
+    }
+    .chat-cerrar {
+        font-size: 30px;             /* easier to tap */
+        padding: 4px 10px;
+    }
+    .chat-formulario input {
+        font-size: 16px;             /* 16px or more: the iPhone does not zoom in on focus */
+    }
+}

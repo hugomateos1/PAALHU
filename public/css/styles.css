@@ -421,22 +421,105 @@ nav a[aria-current="page"] {        /* the page you are on: brown border */
     font-style: italic;
 }
 
-/* --- Mobile: smaller title, photos stacked --- */
+/* --- Phones and small tablets (700px wide or less) ---
+   Everything below only applies on small screens, so the computer
+   layout above does not change. */
 @media (max-width: 700px) {
+    body {
+        font-size: 17px;
+        overflow-wrap: break-word;   /* long emails or words never push the page sideways */
+    }
+
+    /* Header: smaller title that fits on one or two lines */
+    header {
+        padding: 22px 12px;
+    }
     header h1 {
-        font-size: 44px;
+        font-size: 40px;
+        letter-spacing: 4px;
     }
+    header .lema {
+        font-size: 18px;
+    }
+
+    /* Page selector: an ellipse cuts off the corner buttons when they wrap
+       onto several lines, so on phones it becomes a rounded box */
     nav {
-        padding: 20px 40px;
+        width: 100%;
+        padding: 14px 12px;
+        border-radius: 24px;
     }
+    nav ul {
+        gap: 10px;
+    }
+    nav a {
+        padding: 10px 16px;          /* still at least 44px tall: easy to tap */
+        font-size: 17px;
+    }
+
+    main {
+        padding: 20px 12px;
+    }
+
+    /* Photos stacked, a bit shorter */
     .fotos {
         flex-direction: column;
+        gap: 14px;
     }
     .fotos img {
         width: 100%;
+        height: 220px;
     }
+
+    /* Cards and headings */
     section {
-        padding: 16px 18px;
+        padding: 16px 16px;
+        margin-bottom: 20px;
+    }
+    section h2 {
+        font-size: 26px;
+    }
+    section summary {
+        padding: 6px 0;              /* bigger area to tap the triangle */
+    }
+
+    /* Tables (opening hours, spice guide): tighter cells so they fit */
+    th, td {
+        padding: 8px 8px;
+    }
+    .picante {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    /* Buttons and forms: full-width, easy to tap */
+    .form-actions button,
+    .form-actions .btn {
+        flex: 1 1 100%;
+    }
+    .btn-small {
+        padding: 8px 14px;           /* edit/delete buttons in the staff lists */
+        margin: 2px 6px 2px 0;
+    }
+
+    /* Leave room at the bottom so the floating chat button never hides the footer */
+    footer {
+        padding-bottom: 90px;
+    }
+}
+
+/* --- Very narrow phones (380px or less) --- */
+@media (max-width: 380px) {
+    header h1 {
+        font-size: 32px;
+        letter-spacing: 2px;
+    }
+    nav a {
+        padding: 9px 13px;
+        font-size: 16px;
+    }
+    section h2 {
+        font-size: 23px;
     }
 }
 
