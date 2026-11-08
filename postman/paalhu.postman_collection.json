@@ -1,0 +1,340 @@
+{
+  "info": {
+    "name": "PAALHU API",
+    "description": "Practice 1: full CRUD on /api/drinks, an invalid POST, the dishes filter and /stats. Start the server with `npm start` and run the whole collection in order (Run collection). Every request checks its exact status code.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create a drink",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 201 Created\", () => pm.response.to.have.status(201));",
+              "const drink = pm.response.json();",
+              "pm.test(\"Location header points to the new drink\", () => pm.expect(pm.response.headers.get(\"Location\")).to.eql(\"/api/drinks/\" + drink.id));",
+              "pm.test(\"Client id and unknown field are ignored\", () => { pm.expect(drink.id).to.not.eql(999); pm.expect(drink).to.not.have.property(\"x\"); });",
+              "pm.collectionVariables.set(\"drinkId\", drink.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": 999,\n  \"name\": \"Kingfisher\",\n  \"type\": \"beer\",\n  \"price\": 3.8,\n  \"alcoholic\": true,\n  \"x\": \"ignored\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/drinks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks"
+          ]
+        },
+        "description": "POST /api/drinks → 201 + Location. The id and the unknown field \"x\" are ignored. Saves the new id in drinkId for the next requests."
+      }
+    },
+    {
+      "name": "2. List drinks",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Answer is an array with the new drink\", () => { const list = pm.response.json(); pm.expect(list).to.be.an(\"array\"); pm.expect(list.map(d => d.id)).to.include(Number(pm.collectionVariables.get(\"drinkId\"))); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/drinks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks"
+          ]
+        },
+        "description": "GET /api/drinks → 200 with an array that includes the new drink."
+      }
+    },
+    {
+      "name": "3. Get the new drink",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+              "pm.test(\"It is the Kingfisher\", () => pm.expect(pm.response.json().name).to.eql(\"Kingfisher\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/drinks/{{drinkId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks",
+            "{{drinkId}}"
+          ]
+        },
+        "description": "GET /api/drinks/:id → 200."
+      }
+    },
+    {
+      "name": "4. Replace the drink",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Price was updated\", () => pm.expect(pm.response.json().price).to.eql(4.2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Kingfisher\",\n  \"type\": \"beer\",\n  \"price\": 4.2,\n  \"alcoholic\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/drinks/{{drinkId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks",
+            "{{drinkId}}"
+          ]
+        },
+        "description": "PUT /api/drinks/:id → 200. The whole item is sent, not only the changed field."
+      }
+    },
+    {
+      "name": "5. Delete the drink",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 204 No Content\", () => pm.response.to.have.status(204));",
+              "pm.test(\"Body is empty\", () => pm.expect(pm.response.text()).to.eql(\"\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/drinks/{{drinkId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks",
+            "{{drinkId}}"
+          ]
+        },
+        "description": "DELETE /api/drinks/:id → 204 with an empty body."
+      }
+    },
+    {
+      "name": "6. Get the deleted drink (404)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 404 Not Found\", () => pm.response.to.have.status(404));",
+              "pm.test(\"JSON error message\", () => pm.expect(pm.response.json()).to.have.property(\"error\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/drinks/{{drinkId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks",
+            "{{drinkId}}"
+          ]
+        },
+        "description": "GET /api/drinks/:id after the delete → 404 with a JSON error."
+      }
+    },
+    {
+      "name": "7. Invalid drink (400)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 400 Bad Request\", () => pm.response.to.have.status(400));",
+              "pm.test(\"One error per wrong field\", () => { const fields = pm.response.json().errors.map(e => e.field); pm.expect(fields).to.have.members([\"name\", \"type\", \"price\", \"alcoholic\"]); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"K\",\n  \"type\": \"wine\",\n  \"price\": 0,\n  \"alcoholic\": \"yes\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/drinks",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "drinks"
+          ]
+        },
+        "description": "POST /api/drinks with every field wrong → 400 listing all four problems at once."
+      }
+    },
+    {
+      "name": "8. Search and filter dishes",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Every dish matches both filters\", () => pm.response.json().forEach(d => { pm.expect(d.name.toLowerCase()).to.include(\"naan\"); pm.expect(d.vegetarian).to.eql(true); }));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/dishes?search=naan&vegetarian=true",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dishes"
+          ],
+          "query": [
+            {
+              "key": "search",
+              "value": "naan"
+            },
+            {
+              "key": "vegetarian",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "GET /api/dishes?search=naan&vegetarian=true → 200. Filters combine; search ignores upper/lower case."
+      }
+    },
+    {
+      "name": "9. Dish stats",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200 OK\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Has the summary fields\", () => pm.expect(pm.response.json()).to.include.all.keys(\"total\", \"vegetarian\", \"available\", \"averagePrice\", \"byCategory\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/dishes/stats",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "dishes",
+            "stats"
+          ]
+        },
+        "description": "GET /api/dishes/stats → 200, calculated from the current dishes on every request."
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "drinkId",
+      "value": ""
+    }
+  ]
+}
