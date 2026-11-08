@@ -138,6 +138,43 @@ section h3 {
     color: #4b1f0f;
     margin-bottom: 4px;
 }
+
+/* --- Collapsible sections (home page): <details> + <summary> ---
+   Only the title shows; a click opens the section. The browser's own
+   marker is hidden and replaced by a gold triangle that turns when open. */
+section summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    list-style: none;                /* hides the default marker (Firefox, Chrome) */
+}
+section summary::-webkit-details-marker {
+    display: none;                   /* hides the default marker (Safari) */
+}
+section summary::before {
+    content: "▶";
+    color: #d4a017;
+    font-size: 22px;
+    transition: transform 0.2s;
+}
+section details[open] > summary::before {
+    transform: rotate(90deg);
+}
+section summary h2 {
+    margin: 0;
+}
+section details[open] > summary {
+    margin-bottom: 16px;
+}
+section summary:hover h2 {
+    color: #4b1f0f;
+}
+section summary:focus-visible {
+    outline: 3px solid #d4a017;
+    outline-offset: 4px;
+    border-radius: 6px;
+}
 address {
     font-style: normal;
 }
