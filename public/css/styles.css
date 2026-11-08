@@ -438,3 +438,9 @@ nav a[aria-current="page"] {        /* the page you are on: brown border */
         padding: 16px 18px;
     }
 }
+
+/* --- Menu page: notes at the end (VAT, spice key, ordering), bold and set apart --- */
+.menu-notes {
+    margin-top: 3em;
+    font-weight: bold;
+}
