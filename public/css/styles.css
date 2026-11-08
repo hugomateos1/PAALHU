@@ -70,19 +70,33 @@ nav ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px 30px;
+    gap: 12px 16px;
     list-style: none;
     margin: 0;
     padding: 0;
 }
+/* Each link looks like a button: the same gold as the PAALHU title.
+   They stay <a> links (not <button>), because they take you to another page. */
 nav a {
+    display: inline-block;
+    padding: 8px 20px;
+    background-color: #f5c542;
     color: #4b1f0f;
     font-weight: bold;
     text-decoration: none;
+    border: 2px solid #d4a017;
+    border-radius: 999px;            /* pill-shaped button */
+    box-shadow: 0 2px 4px rgba(59, 31, 22, 0.2);
+    transition: background-color 0.15s, transform 0.15s;
 }
 nav a:hover {
-    color: #8E2318;
-    text-decoration: underline;
+    background-color: #e8b730;       /* a little darker on hover */
+    color: #4b1f0f;
+    transform: translateY(-1px);
+}
+nav a:focus-visible {
+    outline: 3px solid #8E2318;
+    outline-offset: 2px;
 }
 
 /* --- Main content: centred column --- */
@@ -395,9 +409,8 @@ button.secondary {
 .btn-small.danger:hover {
     background-color: #b03a2e;
 }
-nav a[aria-current="page"] {
-    color: #8E2318;
-    text-decoration: underline;
+nav a[aria-current="page"] {        /* the page you are on: brown border */
+    border-color: #4b1f0f;
 }
 .staff-links li {
     margin-bottom: 8px;
