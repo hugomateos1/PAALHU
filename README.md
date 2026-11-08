@@ -266,7 +266,29 @@ and stored as `"611223344"`; a `takeaway` order sent with an address is stored w
 
 ## Postman
 
-_To do: how to import `postman/paalhu.postman_collection.json` and run it._
+The collection `postman/paalhu.postman_collection.json` (Collection v2.1) tests the full CRUD of
+`drinks`, one invalid `POST`, the dishes filter and `/stats`.
+
+1. Start the server: `npm start`.
+2. In Postman: **Import** → choose `postman/paalhu.postman_collection.json`.
+3. Open the **PAALHU API** collection → **Run** (Collection Runner) → **Run PAALHU API**.
+
+The requests run in this order and pass against a freshly started server:
+
+| # | Request | Expected |
+|---|---|---|
+| 1 | `POST {{baseUrl}}/drinks` | `201` + `Location`; the sent `id` and an unknown field are ignored; saves the new id in `drinkId` |
+| 2 | `GET {{baseUrl}}/drinks` | `200`, the list includes the new drink |
+| 3 | `GET {{baseUrl}}/drinks/{{drinkId}}` | `200` |
+| 4 | `PUT {{baseUrl}}/drinks/{{drinkId}}` | `200`, price updated |
+| 5 | `DELETE {{baseUrl}}/drinks/{{drinkId}}` | `204`, empty body |
+| 6 | `GET {{baseUrl}}/drinks/{{drinkId}}` | `404` |
+| 7 | `POST {{baseUrl}}/drinks` with every field wrong | `400` with an error for each of the 4 fields |
+| 8 | `GET {{baseUrl}}/dishes?search=naan&vegetarian=true` | `200`, every dish matches both filters |
+| 9 | `GET {{baseUrl}}/dishes/stats` | `200` with `total`, `vegetarian`, `available`, `averagePrice`, `byCategory` |
+
+Each request has a test for its exact status code. The collection variable `baseUrl` is
+`http://localhost:3000/api`; change it there if the server runs on another port.
 
 ## Front end
 
