@@ -433,6 +433,49 @@ nav a[aria-current="page"] {        /* the page you are on: brown border */
     padding: 16px 24px;
     margin-bottom: 20px;
 }
+/* The filters live in a <details>: closed, it is only "▶ Filters", floated to the right so it sits
+   on the same line as the first heading (Starters); open, it takes the full width as a card. */
+.filter-box:not([open]) {
+    float: right;
+}
+.filter-box summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    list-style: none;                /* hides the default marker (Firefox, Chrome) */
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: bold;
+    font-size: 1.2em;
+    line-height: 2;                  /* same line height as the h2 next to it, so they line up */
+    color: #8E2318;
+}
+.filter-box summary::-webkit-details-marker {
+    display: none;                   /* hides the default marker (Safari) */
+}
+.filter-box summary::before {
+    content: "▶";
+    color: #d4a017;
+    transition: transform 0.2s;
+}
+.filter-box[open] > summary::before {
+    transform: rotate(90deg);
+}
+.filter-box summary:hover {
+    color: #4b1f0f;
+}
+.filter-box summary:focus-visible {
+    outline: 3px solid #d4a017;
+    outline-offset: 4px;
+    border-radius: 6px;
+}
+.filter-box[open] > summary {
+    margin-bottom: 10px;
+}
+/* The first heading starts at the very top, level with the closed "Filters" */
+#menu-results > h2:first-child {
+    margin-top: 0;
+}
 .menu-filters select:disabled {
     opacity: 0.5;
 }

@@ -23,6 +23,10 @@
     <main>
         <!-- Filters: every change asks the API again (GET /api/dishes and /api/drinks with a query
              string), so the filtering happens on the server. js/menu.js reads this form. -->
+        <!-- Closed at first: only "▶ Filters" shows, on the right next to the first heading.
+             Opening it shows the filter card across the page. -->
+        <details class="filter-box">
+            <summary>Filters</summary>
         <form id="menu-filters" class="menu-filters" role="search" novalidate autocomplete="off">
             <div class="field wide">
                 <label for="f-search">Search</label>
@@ -68,6 +72,7 @@
                 <button type="reset" class="secondary">Clear filters</button>
             </div>
         </form>
+        </details>
 
         <p id="menu-status" class="status" hidden></p>
         <!-- Filled by js/menu.js: one <h2> + <ul class="dish-list"> per category that has results -->
