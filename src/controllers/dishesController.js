@@ -6,6 +6,7 @@ import { validateDish, validateDishQuery, CATEGORIES } from '../validators/dishe
 // GET /api/dishes -> 200 with the dishes that match the filters (every dish if there are none)
 //   ?search=     part of the name, upper or lower case doesn't matter
 //   ?category=   one of CATEGORIES
+//   ?spiceLevel= 0 to 5, only dishes of that level
 //   ?vegetarian= true | false
 //   ?available=  true | false
 // Filters combine: ?search=naan&vegetarian=true. 400 with every error if a filter is invalid.
@@ -14,13 +15,14 @@ export function listDishes(req, res) {
   const result = validateDishQuery(req.query);
   if (!result.valid) return res.status(400).json({ errors: result.errors });
 
-  const { search, category, vegetarian, available } = result.value;
+  const { search, category, spiceLevel, vegetarian, available } = result.value;
   let dishes = store.getAll('dishes');
   if (search !== undefined) {
     const text = search.toLowerCase();
     dishes = dishes.filter(dish => dish.name.toLowerCase().includes(text));
   }
   if (category !== undefined) dishes = dishes.filter(dish => dish.category === category);
+  if (spiceLevel !== undefined) dishes = dishes.filter(dish => dish.spiceLevel === spiceLevel);
   if (vegetarian !== undefined) dishes = dishes.filter(dish => dish.vegetarian === vegetarian);
   if (available !== undefined) dishes = dishes.filter(dish => dish.available === available);
 

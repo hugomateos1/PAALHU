@@ -2,6 +2,8 @@
 // Returns { valid, errors: [{ field, message }], value }:
 //   value = the clean dish with only the allowed fields (unknown fields and any id are dropped).
 
+import { readSearch } from './common.js';
+
 export const CATEGORIES = ['starters', 'curries', 'vegetarian', 'rice', 'breads', 'desserts'];
 
 export function validateDish(body) {
@@ -52,10 +54,11 @@ export function validateDish(body) {
   return { valid: true, errors: [], value };
 }
 
-// Validator for the query string of GET /api/dishes: ?search=&category=&vegetarian=&available=
+// Validator for the query string of GET /api/dishes:
+//   ?search=&category=&spiceLevel=&vegetarian=&available=
 // Same shape as validateDish: { valid, errors: [{ field, message }], value }.
 //   value = only the filters that were given, already converted:
-//           { search: 'naan', category: 'breads', vegetarian: true, available: false }
+//           { search: 'naan', category: 'breads', spiceLevel: 0, vegetarian: true }
 // Rules:
 // - Every parameter is optional. An empty value (?category=) means "no filter",
 //   which is what a <select> with an "All" option sends.
@@ -67,14 +70,8 @@ export function validateDishQuery(query) {
   const errors = [];
   const value = {};
 
-  // search: any text up to 60 characters (a dish name is at most 60)
-  if (q.search !== undefined) {
-    if (typeof q.search !== 'string' || q.search.trim().length > 60) {
-      errors.push({ field: 'search', message: 'Search must be a single text of at most 60 characters.' });
-    } else if (q.search.trim() !== '') {
-      value.search = q.search.trim();
-    }
-  }
+  // search: shared with the drinks filter (common.js)
+  readSearch(q, errors, value);
 
   // category: one of the fixed list
   if (q.category !== undefined && q.category !== '') {
@@ -82,6 +79,15 @@ export function validateDishQuery(query) {
       errors.push({ field: 'category', message: `Category must be one of: ${CATEGORIES.join(', ')}.` });
     } else {
       value.category = q.category;
+    }
+  }
+
+  // spiceLevel: one level only, the text "0" to "5" (the levels of the spice guide)
+  if (q.spiceLevel !== undefined && q.spiceLevel !== '') {
+    if (typeof q.spiceLevel !== 'string' || !/^[0-5]$/.test(q.spiceLevel)) {
+      errors.push({ field: 'spiceLevel', message: 'Spice level must be a whole number from 0 to 5.' });
+    } else {
+      value.spiceLevel = Number(q.spiceLevel);
     }
   }
 

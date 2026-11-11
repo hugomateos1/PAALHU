@@ -126,8 +126,21 @@ The main resource also has:
 
 | Method | Path | Query params | Success | Errors |
 |---|---|---|---|---|
-| GET | /api/dishes | search, category, vegetarian, available | 200 | 400 |
+| GET | /api/dishes | search, category, spiceLevel, vegetarian, available | 200 | 400 |
 | GET | /api/dishes/stats | | 200 | |
+
+`drinks` also accepts filters, used by the menu page:
+
+| Method | Path | Query params | Success | Errors |
+|---|---|---|---|---|
+| GET | /api/drinks | search | 200 | 400 |
+
+| Query param | Accepted values |
+|---|---|
+| `search` | any text up to 60 characters, matched anywhere in the name, upper/lower case ignored |
+| `category` | one of the dish categories |
+| `spiceLevel` | `0` to `5`: only dishes of that level |
+| `vegetarian`, `available` | `true` or `false` |
 
 `/api/dishes/stats` returns `{ total, vegetarian, available, averagePrice, byCategory: { starters: 5, … } }`.
 
@@ -309,10 +322,16 @@ checks `response.ok`, because `fetch` does not fail on a 400 or 404, and it alwa
 | `pages/manage-orders.html` | `js/manage-orders.js` | `GET`, `POST /api/orders` · `PUT`, `DELETE /api/orders/:id` |
 | `pages/manage-set-menus.html` | `js/manage-set-menus.js` | `GET`, `POST /api/setMenus` · `PUT`, `DELETE /api/setMenus/:id` |
 | `pages/manage-drinks.html` | `js/manage-drinks.js` | `GET`, `POST /api/drinks` · `PUT`, `DELETE /api/drinks/:id` |
+| `pages/menu.html` | `js/menu.js` | `GET /api/dishes?search=&category=&spiceLevel=&vegetarian=&available=true` · `GET /api/drinks?search=` |
 | every page with the chat | `js/chat.js` | `GET /api/chat/status`, `POST /api/chat` |
 
-_To do: menu, set menu and home page (dishes, drinks, setMenus, reviews, `/stats`) and the staff pages
-for tables, customers and reviews._
+_To do: set menu and home page (setMenus, reviews, `/stats`) and the staff pages for tables,
+customers and reviews._
+
+The menu page has a filter bar: a search box, a "Show" `<select>` (a category or drinks), a spice
+level `<select>` (starts on "Any level") and a "Vegetarian only" checkbox. Every change builds a new query
+string and asks the API again. "Show spice level" is not a filter: it only hides the spice symbols
+with a CSS class, so it never calls the API.
 
 Shared front-end files:
 
@@ -338,7 +357,7 @@ so it updates without reloading the page.
 - **An id that is not a number answers 404.** `GET /api/drinks/abc` looks for the item with id
   `Number('abc')`, finds none and answers `404 { "error": "Drink not found." }`. A 400 would also be
   defensible; we chose 404 because, for the client, both mean "there is no item at this URL".
-- **Search and filter run on the server.** `GET /api/dishes?search=&category=&vegetarian=&available=`
+- **Search and filter run on the server.** `GET /api/dishes?search=&category=&spiceLevel=&vegetarian=&available=`
   filters in the controller and only sends what matches. The browser downloads less, every client
   (website, Postman, chat) gets the same rules, and the page never needs the full list to search it.
 - **Invalid query parameters answer 400.** A category outside the list, or a flag that is not

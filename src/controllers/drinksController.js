@@ -1,10 +1,23 @@
 // Drinks controller: one function per endpoint. Same pattern as dishesController.js.
 import * as store from '../data/store.js';
-import { validateDrink } from '../validators/drinksValidator.js';
+import { validateDrink, validateDrinkQuery } from '../validators/drinksValidator.js';
 
-// GET /api/drinks -> 200 with every drink
+// GET /api/drinks -> 200 with the drinks that match the filters (every drink if there are none)
+//   ?search=    part of the name, upper or lower case doesn't matter
+// 400 with every error if a filter is invalid. Used by the menu page, so drinks are filtered
+// on the server like dishes.
 export function listDrinks(req, res) {
-  res.json(store.getAll('drinks'));
+  const result = validateDrinkQuery(req.query);
+  if (!result.valid) return res.status(400).json({ errors: result.errors });
+
+  const { search } = result.value;
+  let drinks = store.getAll('drinks');
+  if (search !== undefined) {
+    const text = search.toLowerCase();
+    drinks = drinks.filter(drink => drink.name.toLowerCase().includes(text));
+  }
+
+  res.json(drinks);
 }
 
 // GET /api/drinks/:id -> 200, or 404

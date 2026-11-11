@@ -22,3 +22,18 @@ export function isRealDate(value) {
 export function isTime(value) {
   return typeof value === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 }
+
+// ---------- Query-string filter (GET /api/dishes, GET /api/drinks) ----------
+// Query values always arrive as text. A repeated parameter (?search=a&search=b) arrives as an
+// array and is an error. An empty value (?search=) means "no filter", which is what an empty
+// search box sends. It adds its problem to `errors` and the cleaned text to `value`.
+
+// ?search=  any text up to 60 characters (a name is at most 60)
+export function readSearch(q, errors, value) {
+  if (q.search === undefined) return;
+  if (typeof q.search !== 'string' || q.search.trim().length > 60) {
+    errors.push({ field: 'search', message: 'Search must be a single text of at most 60 characters.' });
+  } else if (q.search.trim() !== '') {
+    value.search = q.search.trim();
+  }
+}

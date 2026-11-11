@@ -421,6 +421,25 @@ nav a[aria-current="page"] {        /* the page you are on: brown border */
     font-style: italic;
 }
 
+/* --- Menu page: filter bar and "Show spice level" toggle (js/menu.js) --- */
+.menu-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 6px 20px;
+    background-color: #fff;
+    border-radius: 16px;
+    border-top: 6px solid #d4a017;
+    box-shadow: 0 4px 14px rgba(59, 31, 22, 0.15);
+    padding: 16px 24px;
+    margin-bottom: 20px;
+}
+.menu-filters select:disabled {
+    opacity: 0.5;
+}
+.hide-spice .spice {
+    display: none;
+}
+
 /* --- Phones and small tablets (700px wide or less) ---
    Everything below only applies on small screens, so the computer
    layout above does not change. */
@@ -478,6 +497,9 @@ nav a[aria-current="page"] {        /* the page you are on: brown border */
     }
     section h2 {
         font-size: 26px;
+    }
+    .menu-filters {
+        padding: 14px 16px;
     }
     section summary {
         padding: 6px 0;              /* bigger area to tap the triangle */

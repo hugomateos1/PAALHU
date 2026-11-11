@@ -1,6 +1,8 @@
 // Validator for drinks. Checks every field of the body and collects ALL the problems at once.
 // Returns { valid, errors: [{ field, message }], value } (value = only the allowed fields).
 
+import { readSearch } from './common.js';
+
 export const DRINK_TYPES = ['lassi', 'tea', 'soft-drink', 'beer', 'water'];
 
 export function validateDrink(body) {
@@ -37,5 +39,20 @@ export function validateDrink(body) {
     price: b.price,
     alcoholic: b.alcoholic,
   };
+  return { valid: true, errors: [], value };
+}
+
+// Validator for the query string of GET /api/drinks: ?search=
+// Same rules as the dishes filter (see validateDishQuery): every parameter optional,
+// an empty value means "no filter", unknown parameters ignored, 400 for an invalid value.
+export function validateDrinkQuery(query) {
+  const q = query ?? {};
+  const errors = [];
+  const value = {};
+  readSearch(q, errors, value);
+
+  if (errors.length > 0) {
+    return { valid: false, errors, value: null };
+  }
   return { valid: true, errors: [], value };
 }
