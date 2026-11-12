@@ -54,7 +54,7 @@ const data = {
     { id: 1, name: 'Set menu', price: 12.90, service: 'lunch', weekdaysOnly: true, active: true },
   ],
 
-  // The restaurant's 13 tables (same as .claude/skills/paalhu-reservas/config.json).
+  // The restaurant's 13 tables (same as .claude/skills/paalhu-bookings/config.json).
   tables: [
     { id: 1,  code: 'M1',  seats: 2, joinable: true, active: true },
     { id: 2,  code: 'M2',  seats: 2, joinable: true, active: true },

@@ -2,13 +2,13 @@ node_modules/
 
 # Customers' personal data (names, phones): never to GitHub.
 # The register creates the empty file if it doesn't exist.
-.claude/skills/paalhu-reservas/reservas.json
+.claude/skills/paalhu-bookings/bookings.json
 # The permanent booking history and its Excel exports.
-*-historial.jsonl
-reservas*.csv
+*-history.jsonl
+bookings*.csv
 
 # Skill test results
-.claude/skills/paalhu-reservas-workspace/
+.claude/skills/paalhu-bookings-workspace/
 
 # Local settings: port and, later, the session secret.
 .env

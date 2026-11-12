@@ -1,0 +1,75 @@
+{
+  "_note": "PAALHU capacity, shifts and policy. bookings.mjs reads this file; if the tables, opening hours or policy change, change them here and in reference.md / the website.",
+  "email": "owners@paalhu.es",
+  "tables": [
+    { "id": "M1", "seats": 2 },
+    { "id": "M2", "seats": 2 },
+    { "id": "M3", "seats": 2 },
+    { "id": "M4", "seats": 2 },
+    { "id": "M5", "seats": 2 },
+    { "id": "M6", "seats": 2 },
+    { "id": "M7", "seats": 4 },
+    { "id": "M8", "seats": 4 },
+    { "id": "M9", "seats": 4 },
+    { "id": "M10", "seats": 4 },
+    { "id": "M11", "seats": 4 },
+    { "id": "M12", "seats": 4 },
+    { "id": "M13", "seats": 4 }
+  ],
+  "_joinable": "Each row is a line of adjacent tables: only consecutive tables in the same row can be joined (maximum 3).",
+  "joinable": [
+    ["M1", "M2"],
+    ["M3", "M4"],
+    ["M5", "M6"],
+    ["M7", "M8", "M9", "M10", "M11", "M12", "M13"]
+  ],
+  "_shifts": "from/to = arrival times allowed in that shift. The table is held for the whole shift.",
+  "shifts": {
+    "monday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:15" }
+    ],
+    "tuesday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:15" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "22:45" }
+    ],
+    "wednesday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:15" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "22:45" }
+    ],
+    "thursday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:15" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "22:45" }
+    ],
+    "friday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:15" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "23:15" }
+    ],
+    "saturday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:45" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "23:15" }
+    ],
+    "sunday": [
+      { "id": "lunch-1", "name": "Lunch · 1st shift", "from": "13:00", "to": "14:45" },
+      { "id": "lunch-2", "name": "Lunch · 2nd shift", "from": "15:00", "to": "15:45" },
+      { "id": "dinner-1", "name": "Dinner · 1st shift", "from": "20:00", "to": "21:45" },
+      { "id": "dinner-2", "name": "Dinner · 2nd shift", "from": "22:00", "to": "22:15" }
+    ]
+  },
+  "policy": {
+    "free_cancellation_hours": 24,
+    "max_group": 12,
+    "deposit": null,
+    "nearly_full_from_seats": 32
+  }
+}

@@ -1,6 +1,6 @@
 ---
-name: paalhu-reservas
-description: Booking register for PAALHU restaurant (Madrid). Use it whenever the team wants to register, seat, change or cancel a table booking; find out where to seat a group or which table is free; check whether a lunch or dinner shift is full or nearly full; get the day's or week's booking sheet; view or export the history of all bookings; manage the waiting list; or answer a customer about their booking or about questions before booking (opening hours, menu, allergens, coeliacs, groups, cancellation policy). Triggers even when "booking" is not said: "mesa para 6 el sábado", "¿dónde los ponemos?", "¿estamos llenos el viernes?", "cancela lo de García", "pásala a las 21:30", "table for four tonight", "reserva", "booking". NOT for editing the website or its CSS, replying to reviews, or delivery orders (that is paalhu-assistant).
+name: paalhu-bookings
+description: Booking register for PAALHU restaurant (Madrid). Use it whenever the team wants to register, seat, change or cancel a table booking; find out where to seat a group or which table is free; check whether a lunch or dinner shift is full or nearly full; get the day's or week's booking sheet; view or export the history of all bookings; manage the waiting list; or answer a customer about their booking or about questions before booking (opening hours, menu, allergens, coeliacs, groups, cancellation policy). Triggers even when "booking" is not said, in English or Spanish: "table for four tonight", "where do we seat them?", "are we full on Friday?", "mesa para 6 el sábado", "¿estamos llenos el viernes?", "cancela lo de García", "pásala a las 21:30", "reserva", "booking". NOT for editing the website or its CSS, replying to reviews, or delivery orders (that is paalhu-assistant).
 ---
 
 # PAALHU — bookings
@@ -18,50 +18,50 @@ Everything you say must come from these files. If something isn't there, don't i
 | File | What it contains |
 |---|---|
 | `config.json` (in this folder) | Tables, rows of tables that can be joined, each day's shifts with their arrival times, and the policy (24 h for free cancellation, maximum 12 per booking, no deposit) |
-| `reservas.json` (in this folder) | The register: bookings (including cancelled ones, which are never deleted) and the waiting list. **Only the script and the website modify it.** It is not committed to git because it holds personal data. |
-| `reservas-historial.jsonl` (in this folder) | The permanent history: one line per creation, change, cancellation and waiting-list entry, with date, origin (`chat` or `equipo`) and the data at that moment. Lines are only appended; it is never rewritten or deleted. Not committed to git either. |
-| `reservas-core.mjs` (in this folder) | The engine shared by `reservas.mjs` (team) and `src/controllers/chatController.js` (website chat). If you change the table logic, do it here. |
+| `bookings.json` (in this folder) | The register: bookings (including cancelled ones, which are never deleted) and the waiting list. **Only the script and the website modify it.** It is not committed to git because it holds personal data. |
+| `bookings-history.jsonl` (in this folder) | The permanent history: one line per creation, change, cancellation and waiting-list entry, with date, origin (`chat` or `team`) and the data at that moment. Lines are only appended; it is never rewritten or deleted. Not committed to git either. |
+| `bookings-core.mjs` (in this folder) | The engine shared by `bookings.mjs` (team) and `src/controllers/chatController.js` (website chat). If you change the table logic, do it here. |
 | `../paalhu-assistant/reference.md` | The menu, prices, opening hours, address, spice levels and what is **not** published |
 
-**Customers can book through the website chat** (`public/pages/booking.html` and the chat button), **by phone** (+34 627 41 09 35) **or by email** (owners@paalhu.es). There is no booking form. The chat registers its own bookings; phone and email bookings are registered by the team with `reservas.mjs`. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `reservas.json`, so `cuadro` and `historial` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
+**Customers can book through the website chat** (`public/pages/booking.html` and the chat button), **by phone** (+34 627 41 09 35) **or by email** (owners@paalhu.es). There is no booking form. The chat registers its own bookings; phone and email bookings are registered by the team with `bookings.mjs`. The chat can also look up, change and cancel bookings (with the customer's reference and phone). Everything goes into the same `bookings.json`, so `sheet` and `history` show everything, wherever it came from. When a customer cancels from the chat and someone on the waiting list now fits, the server prints it to its console as `[NOTIFY WAITING LIST]`.
 
 ## The main rule: the script does the maths
 
-Table assignment, occupancy, the "full" status and alternatives are calculated by `reservas.mjs`. Don't work them out in your head and don't edit `reservas.json` by hand. The team trusts that what you say matches the register, and a single mental-maths mistake (two groups at the same table, a "there's room" that isn't true) is paid for at the door with a customer waiting.
+Table assignment, occupancy, the "full" status and alternatives are calculated by `bookings.mjs`. Don't work them out in your head and don't edit `bookings.json` by hand. The team trusts that what you say matches the register, and a single mental-maths mistake (two groups at the same table, a "there's room" that isn't true) is paid for at the door with a customer waiting.
 
 Run it from this folder:
 
 ```bash
-node reservas.mjs turnos         2026-10-03                     # occupancy of each shift that day
-node reservas.mjs disponibilidad 2026-10-03 21:00 6             # does it fit? at which table? (saves nothing)
-node reservas.mjs alta           2026-10-03 21:00 6 --nombre "García" --telefono "600 111 222" --notas "Birthday; baby chair"
-node reservas.mjs buscar         garcía                         # find a booking's id
-node reservas.mjs cambiar        R-20261003-001 --hora 21:30    # also --fecha, --personas, --notas, --mesas
-node reservas.mjs cancelar       R-20261003-001
-node reservas.mjs espera         2026-10-03 21:00 2 --nombre "Ana" --telefono "..."
-node reservas.mjs cuadro         2026-10-03 [--dias 7]          # booking sheet for the day or the week
-node reservas.mjs historial      [--desde 2026-10-01] [--hasta 2026-10-31]   # all bookings, cancelled ones too
-node reservas.mjs historial      --csv reservas.csv             # the same, in a file Excel can open
-node reservas.mjs historial      --eventos                      # every creation, change and cancellation, in order
+node bookings.mjs shifts       2026-10-03                     # occupancy of each shift that day
+node bookings.mjs availability 2026-10-03 21:00 6             # does it fit? at which table? (saves nothing)
+node bookings.mjs add          2026-10-03 21:00 6 --name "García" --phone "600 111 222" --notes "Birthday; baby chair"
+node bookings.mjs search       garcía                         # find a booking's id
+node bookings.mjs change       R-20261003-001 --time 21:30    # also --date, --guests, --notes, --tables
+node bookings.mjs cancel       R-20261003-001
+node bookings.mjs waitlist     2026-10-03 21:00 2 --name "Ana" --phone "..."
+node bookings.mjs sheet        2026-10-03 [--days 7]          # booking sheet for the day or the week
+node bookings.mjs history      [--from 2026-10-01] [--to 2026-10-31]   # all bookings, cancelled ones too
+node bookings.mjs history      --csv bookings.csv             # the same, in a file Excel can open
+node bookings.mjs history      --events                       # every creation, change and cancellation, in order
 ```
 
 - **Exit codes:** `0` = done; `2` = doesn't fit or a rule forbids it (the script already prints alternatives); `1` = badly written input (fix it and retry).
-- **Specific tables:** if the team asks for a table ("put them at 7 and 8"), pass it with `--mesas M7,M8`. The script checks that it is free, has enough seats and can be joined.
-- **Waiting list:** when registering someone who came from the waiting list, add `--de-espera E-...` to mark them as served.
-- **History:** when the team asks for "all bookings", "the register", "how many bookings have we had" or "send it to Excel", use `historial`. The columns are Reference, Date, Time, Guests, Name, Phone, Notes, Status, Origin and Created. If they want a file, save the CSV outside the project folder or in a folder that isn't committed to git, because it holds personal data.
-- **Current time:** `--ahora "YYYY-MM-DDTHH:MM"` sets the current time (only needed in tests). `--datos <file>` uses a different register (with its own history next to it).
+- **Specific tables:** if the team asks for a table ("put them at 7 and 8"), pass it with `--tables M7,M8`. The script checks that it is free, has enough seats and can be joined.
+- **Waiting list:** when registering someone who came from the waiting list, add `--from-waitlist W-...` to mark them as served.
+- **History:** when the team asks for "all bookings", "the register", "how many bookings have we had" or "send it to Excel", use `history`. The columns are Reference, Date, Time, Guests, Name, Phone, Notes, Status, Origin and Created. If they want a file, save the CSV outside the project folder or in a folder that isn't committed to git, because it holds personal data.
+- **Current time:** `--now "YYYY-MM-DDTHH:MM"` sets the current time (only needed in tests). `--data <file>` uses a different register (with its own history next to it).
 
 ## Before running
 
 - **Convert relative dates** ("Saturday", "tonight", "tomorrow") to `YYYY-MM-DD` from today's date. Write the weekday and date in your reply ("Saturday 3 October") so the team can spot straight away if you misunderstood.
-- **To register a booking you need** date, time, number of guests, name and phone. If the name or phone is missing, use `disponibilidad` to say where they would go and ask for them. Don't make up a name or phone to be able to register it.
+- **To register a booking you need** date, time, number of guests, name and phone. If the name or phone is missing, use `availability` to say where they would go and ask for them. Don't make up a name or phone to be able to register it.
 - **Collect the notes**: allergies, coeliacs, baby chair, pushchair, celebration or accessibility. They go on the sheet and alert the kitchen and floor.
-- To change or cancel a booking, **search first** (`buscar`). If there are several matches (for example, two Garcías), ask which one. Don't pick yourself.
+- To change or cancel a booking, **search first** (`search`). If there are several matches (for example, two Garcías), ask which one. Don't pick yourself.
 
 ## How shifts and capacity work
 
 - 13 tables and 40 seats per shift: M1 to M6 are tables for 2 and M7 to M13 tables for 4. Only adjacent tables in the same row can be joined: M1+M2, M3+M4, M5+M6, or 2 to 3 adjacent ones between M7 and M13. A group of 5 to 8 takes two tables for 4; one of 9 to 12, three.
-- There are two shifts per service: lunch from 13:00 and 15:00, and dinner from 20:00 and 22:00. The table is held for the whole shift. Monday evening is closed. The exact arrival times for each day are in `config.json`, and the script applies them.
+- There are two shifts per service: lunch from 13:00 and 15:00 (`lunch-1`, `lunch-2`), and dinner from 20:00 and 22:00 (`dinner-1`, `dinner-2`). The table is held for the whole shift. Monday evening is closed. The exact arrival times for each day are in `config.json`, and the script applies them.
 - **Occupancy** = seats of the assigned tables, out of 40. So a table for 4 with 3 guests counts as 4. The script also prints the actual number of guests.
 - Shift states: **FULL** when no table is left (40/40); **NEARLY FULL** from 32/40; otherwise **AVAILABLE**.
 - **Groups of more than 12:** not booked here. Refer them to owners@paalhu.es. There is no published group menu, so don't offer one.
@@ -70,7 +70,7 @@ node reservas.mjs historial      --eventos                      # every creation
 
 ### 1. Booking sheet
 
-Paste the output of `node reservas.mjs cuadro ...` as is. The columns are always the same so the team can read it at a glance:
+Paste the output of `node bookings.mjs sheet ...` as is. The columns are always the same so the team can read it at a glance:
 
 ```
 ### Dinner · 1st shift (20:00) — 32/40 seats · 30 guests · NEARLY FULL
@@ -116,7 +116,7 @@ Welcome to our table!
 The PAALHU family
 ```
 
-- **In Spanish:** "Hola, [nombre]: ¡Gracias por elegir PAALHU! Te confirmamos tu reserva: Día / Hora / Personas / A nombre de / Notas / Referencia … Si necesitas cambiarla o cancelarla, avísanos con al menos 24 horas de antelación desde el chat de nuestra web, por teléfono (+34 627 41 09 35) o por email, con tu referencia y tu teléfono. ¡Bienvenidos a nuestra mesa! La familia PAALHU".
+- **For Spanish-speaking customers**, the same message in Spanish: "Hola, [nombre]: ¡Gracias por elegir PAALHU! Te confirmamos tu reserva: Día / Hora / Personas / A nombre de / Notas / Referencia … Si necesitas cambiarla o cancelarla, avísanos con al menos 24 horas de antelación desde el chat de nuestra web, por teléfono (+34 627 41 09 35) o por email, con tu referencia y tu teléfono. ¡Bienvenidos a nuestra mesa! La familia PAALHU".
 - **Change:** "We've changed your booking. Here's how it looks now:" followed by the new details.
 - **Cancellation:** confirm the cancellation, repeat the details of the cancelled booking and leave the door open ("We hope to see you soon"). If it is late (less than 24 h), there is no deposit and nothing is charged: don't threaten charges or scold.
 - **No room:** explain kindly, propose the script's alternatives and offer the waiting list. Don't give a reference until the booking is registered.
@@ -134,7 +134,7 @@ Answer from `reference.md` in one to three sentences, and finish by proposing th
   - That you note it on the booking.
   - That for the details of a dish they should write to owners@paalhu.es.
 
-  You can point out the menu's vegetarian and vegan dishes (palak paneer, chana masala, dal tadka, vegetable korma), but without presenting them as safe for an allergy. If the person already has a booking, add the allergy to their notes with `cambiar --notas`.
+  You can point out the menu's vegetarian and vegan dishes (palak paneer, chana masala, dal tadka, vegetable korma), but without presenting them as safe for an allergy. If the person already has a booking, add the allergy to their notes with `change --notes`.
 - **How to book:** through the website chat, by phone (+34 627 41 09 35) or by email (owners@paalhu.es).
 - **Groups:** up to 12 are booked here; larger ones go to owners@paalhu.es.
 - **Cancellation policy:** free cancellation up to 24 h before, no deposit.

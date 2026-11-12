@@ -2,25 +2,25 @@
 // - A language model talks to the customer, with tools over the booking register.
 //   Customers can also book and order by phone or email; the chat does nothing the team cannot do by hand.
 //   Pilot: the chat has its full structure, but no model is connected (see askModel).
-// The booking register is the same one the team uses with the paalhu-reservas skill (reservas-core.mjs),
+// The booking register is the same one the team uses with the paalhu-bookings skill (bookings-core.mjs),
 // and every chat booking is also written to the permanent history.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { abrirLibro, DatoError, cfg, diaTxt } from '../../.claude/skills/paalhu-reservas/reservas-core.mjs';
+import { openRegister, InputError, cfg, dayName } from '../../.claude/skills/paalhu-bookings/bookings-core.mjs';
 import * as valid from '../validators.js';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..'); // repo root
-const register = abrirLibro({ datos: process.env.RESERVAS_DATOS || undefined });
+const register = openRegister({ data: process.env.BOOKINGS_DATA || undefined });
 const REFERENCE = fs.readFileSync(path.join(ROOT, '.claude/skills/paalhu-assistant/reference.md'), 'utf8');
 
 // ---------- customer view ----------
 // What a customer sees never includes tables, or other customers' names or phones.
-const customerAlternatives = alts => (alts ?? []).map(a => ({ date: a.fecha, day: diaTxt(a.fecha), time: a.hora, shift: a.turno.nombre }));
-const customerBooking = r => ({ reference: r.id, date: r.fecha, day: diaTxt(r.fecha), time: r.hora, guests: r.personas, name: r.nombre, notes: r.notas, status: r.estado });
-const customerReason = c => c.norma || c.cerrado || c.sinTurno || c.pasado ? c.motivo
-  : `No table left for that number of guests in ${c.turno?.nombre ?? 'that shift'}.`;
+const customerAlternatives = alts => (alts ?? []).map(a => ({ date: a.date, day: dayName(a.date), time: a.time, shift: a.shift.name }));
+const customerBooking = r => ({ reference: r.id, date: r.date, day: dayName(r.date), time: r.time, guests: r.guests, name: r.name, notes: r.notes, status: r.status });
+const customerReason = c => c.rule || c.closed || c.noShift || c.past ? c.reason
+  : `No table left for that number of guests in ${c.shift?.name ?? 'that shift'}.`;
 const digits = t => String(t ?? '').replace(/\D/g, '').slice(-9);
 const samePhone = (a, b) => digits(a).length >= 6 && digits(a) === digits(b);
 
@@ -48,12 +48,12 @@ const TOOLS = [
 ].map(t => ({ ...t, strict: true }));
 
 function customersOwnBooking({ reference, phone }) {
-  const r = register.obtener(String(reference ?? '').trim().toUpperCase());
-  if (!r || !samePhone(r.telefono, phone)) return null; // same answer whether it doesn't exist or the phone doesn't match
+  const r = register.get(String(reference ?? '').trim().toUpperCase());
+  if (!r || !samePhone(r.phone, phone)) return null; // same answer whether it doesn't exist or the phone doesn't match
   return r;
 }
 const notFound = { ok: false, reason: "I can't find any booking with that reference and phone. Please check the details." };
-const logWaitingList = list => { for (const e of list) console.log(`[NOTIFY WAITING LIST] now fits ${e.id} · ${e.nombre} · ${e.telefono} · ${e.personas} guests ${e.fecha} ${e.hora}`); };
+const logWaitingList = list => { for (const e of list) console.log(`[NOTIFY WAITING LIST] now fits ${e.id} · ${e.name} · ${e.phone} · ${e.guests} guests ${e.date} ${e.time}`); };
 
 // Checks and cleans a tool's input with validators.js (fields that are absent are left alone).
 const FIELD_VALIDATORS = { date: valid.date, guests: valid.guests, name: valid.name, phone: valid.phone };
@@ -64,25 +64,25 @@ function validateInput(input) {
 }
 
 // Runs a tool and returns what the customer is allowed to see.
-// The booking register (reservas-core.mjs) uses Spanish field names, so inputs are mapped here.
+// The booking register (bookings-core.mjs) uses the same field names as the tools, plus origin 'chat'.
 function runTool(name, rawInput) {
   const input = validateInput(rawInput);
   switch (name) {
     case 'check_availability': {
-      const c = register.disponibilidad(input.date, input.time, input.guests);
-      return c.ok ? { fits: true, date: input.date, day: diaTxt(input.date), time: input.time, shift: c.turno.nombre }
-        : { fits: false, reason: customerReason(c), alternatives: customerAlternatives(c.alternativas), offer_waiting_list: !c.norma && !c.cerrado && !c.sinTurno && !c.pasado };
+      const c = register.availability(input.date, input.time, input.guests);
+      return c.ok ? { fits: true, date: input.date, day: dayName(input.date), time: input.time, shift: c.shift.name }
+        : { fits: false, reason: customerReason(c), alternatives: customerAlternatives(c.alternatives), offer_waiting_list: !c.rule && !c.closed && !c.noShift && !c.past };
     }
     case 'create_booking': {
-      const c = register.alta({ fecha: input.date, hora: input.time, personas: input.guests, nombre: input.name, telefono: input.phone, notas: input.notes, origen: 'chat' });
-      if (!c.ok) return { booked: false, reason: customerReason(c), alternatives: customerAlternatives(c.alternativas) };
-      console.log(`[chat] booking ${c.reserva.id} · ${c.reserva.fecha} ${c.reserva.hora} · ${c.reserva.personas} guests · table ${c.reserva.mesas.join('+')}`);
-      return { booked: true, ...customerBooking(c.reserva), cancellation_policy: `Free up to ${cfg.politica.cancelacion_sin_cargo_horas} h before. No deposit.` };
+      const c = register.add({ date: input.date, time: input.time, guests: input.guests, name: input.name, phone: input.phone, notes: input.notes, origin: 'chat' });
+      if (!c.ok) return { booked: false, reason: customerReason(c), alternatives: customerAlternatives(c.alternatives) };
+      console.log(`[chat] booking ${c.booking.id} · ${c.booking.date} ${c.booking.time} · ${c.booking.guests} guests · table ${c.booking.tables.join('+')}`);
+      return { booked: true, ...customerBooking(c.booking), cancellation_policy: `Free up to ${cfg.policy.free_cancellation_hours} h before. No deposit.` };
     }
     case 'join_waiting_list': {
-      const c = register.espera({ fecha: input.date, hora: input.time, personas: input.guests, nombre: input.name, telefono: input.phone, notas: input.notes, origen: 'chat' });
-      console.log(`[chat] waiting list ${c.entrada.id} · ${c.entrada.fecha} ${c.entrada.hora} · ${c.entrada.personas} guests`);
-      return { added: true, reference: c.entrada.id, date: c.entrada.fecha, day: diaTxt(c.entrada.fecha), time: c.entrada.hora, shift: c.turno.nombre, position: c.posicion };
+      const c = register.waitlist({ date: input.date, time: input.time, guests: input.guests, name: input.name, phone: input.phone, notes: input.notes, origin: 'chat' });
+      console.log(`[chat] waiting list ${c.entry.id} · ${c.entry.date} ${c.entry.time} · ${c.entry.guests} guests`);
+      return { added: true, reference: c.entry.id, date: c.entry.date, day: dayName(c.entry.date), time: c.entry.time, shift: c.shift.name, position: c.position };
     }
     case 'get_booking': {
       const r = customersOwnBooking(input);
@@ -91,29 +91,29 @@ function runTool(name, rawInput) {
     case 'change_booking': {
       const r = customersOwnBooking(input);
       if (!r) return notFound;
-      if (r.estado !== 'confirmada') return { ok: false, reason: `That booking is ${r.estado}.` };
-      const c = register.cambiar(r.id, { fecha: input.date, hora: input.time, personas: input.guests, notas: input.notes, origen: 'chat' });
-      if (!c.ok) return { ok: false, unchanged: true, reason: customerReason(c), alternatives: customerAlternatives(c.alternativas) };
-      logWaitingList(c.esperaQueCabe);
-      return { ok: true, ...customerBooking(c.reserva) };
+      if (r.status !== 'confirmed') return { ok: false, reason: `That booking is ${r.status}.` };
+      const c = register.change(r.id, { date: input.date, time: input.time, guests: input.guests, notes: input.notes, origin: 'chat' });
+      if (!c.ok) return { ok: false, unchanged: true, reason: customerReason(c), alternatives: customerAlternatives(c.alternatives) };
+      logWaitingList(c.waitlistThatFits);
+      return { ok: true, ...customerBooking(c.booking) };
     }
     case 'cancel_booking': {
       const r = customersOwnBooking(input);
       if (!r) return notFound;
-      if (r.estado !== 'confirmada') return { ok: false, reason: `That booking was already ${r.estado}.` };
-      const c = register.cancelar(r.id, { origen: 'chat' });
-      logWaitingList(c.esperaQueCabe);
-      return { cancelled: true, ...customerBooking(c.reserva), no_charge: true };
+      if (r.status !== 'confirmed') return { ok: false, reason: `That booking was already ${r.status}.` };
+      const c = register.cancel(r.id, { origin: 'chat' });
+      logWaitingList(c.waitlistThatFits);
+      return { cancelled: true, ...customerBooking(c.booking), no_charge: true };
     }
-    default: throw new DatoError(`Unknown tool: ${name}`);
+    default: throw new InputError(`Unknown tool: ${name}`);
   }
 }
 
 // ---------- system prompt ----------
 // Keys are the day names used in config.json.
-const DAY_NAMES = { lunes: 'Monday', martes: 'Tuesday', miercoles: 'Wednesday', jueves: 'Thursday', viernes: 'Friday', sabado: 'Saturday', domingo: 'Sunday' };
+const DAY_NAMES = { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
 const shiftSchedule = Object.entries(DAY_NAMES)
-  .map(([key, day]) => `- ${day}: ${(cfg.turnos[key] ?? []).map(t => `${t.nombre} (arrivals ${t.desde}–${t.hasta})`).join('; ') || 'closed'}`)
+  .map(([key, day]) => `- ${day}: ${(cfg.shifts[key] ?? []).map(s => `${s.name} (arrivals ${s.from}–${s.to})`).join('; ') || 'closed'}`)
   .join('\n');
 
 const SYSTEM = `You are the booking and ordering assistant of PAALHU, the Nahasapeemapetilon family's Indian restaurant at Calle de Pirineos 55, Madrid. You talk to customers in the website chat.
@@ -126,12 +126,12 @@ How to work:
 - You only know availability, tables and shifts through the tools. Don't say there is or isn't room without checking. Never say a booking is made, changed or cancelled unless the tool has confirmed it.
 - To book you need day, time, number of guests, name and phone, and ask about allergies, coeliac needs, a baby chair or a celebration. Convert "Saturday", "tomorrow" or "tonight" into a specific date using today's date given below, and say it with the weekday ("Saturday 3 October").
 - Before creating, changing or cancelling a booking, summarise the details and ask the customer to confirm. Only use the tool once they say yes.
-- When you confirm a booking, repeat day, time, guests, name and reference, and remind them of the policy: free changes or cancellations with at least ${cfg.politica.cancelacion_sin_cargo_horas} hours' notice; no deposit.
+- When you confirm a booking, repeat day, time, guests, name and reference, and remind them of the policy: free changes or cancellations with at least ${cfg.policy.free_cancellation_hours} hours' notice; no deposit.
 - If there is no room, say so kindly, offer the alternatives the tool returns and the waiting list.
 - To look up, change or cancel a booking, ask for the reference (R-...) and the phone it was made with. You cannot search bookings by name or give out other people's details.
 - Customers can also book, change or cancel by phone (+34 627 41 09 35) or by email (${cfg.email}). If they prefer that, give them those. Changes and cancellations here need the customer's reference and phone.
 - Orders: for a takeaway or delivery order, collect the dishes and quantities, a spice level from 1 to 5 for each dish, name and phone, takeaway or delivery (with the address), the time, and any allergies. Check the time is within the opening hours. Use only dishes and prices from the menu below, list each item with its price, and don't work out a total yourself. You have no tool to register orders yet, so never say an order is placed or confirmed: give the summary and ask them to call +34 627 41 09 35 to confirm it. They can also order directly by phone or by email.
-- Groups of more than ${cfg.politica.grupo_maximo}: not booked here; they should write to ${cfg.email}. There is no published group menu.
+- Groups of more than ${cfg.policy.max_group}: not booked here; they should write to ${cfg.email}. There is no published group menu.
 - Don't give table numbers: they are internal.
 
 Allergies and coeliac disease: the allergens of each dish are not published. Never say a dish is free of an allergen or that it is suitable or safe, nor the opposite. You can say that we accept bookings with allergies and intolerances, that we note it on the booking, that they should also tell the staff on arrival, and that for details of each dish they should write to ${cfg.email}.
@@ -200,7 +200,7 @@ async function reply(s, text) {
       const results = toolCalls.map(u => {
         try { return { type: 'tool_result', tool_use_id: u.id, content: JSON.stringify(runTool(u.name, u.input)) }; }
         catch (e) {
-          if (!(e instanceof DatoError || e instanceof valid.ValidationError)) throw e;
+          if (!(e instanceof InputError || e instanceof valid.ValidationError)) throw e;
           return { type: 'tool_result', tool_use_id: u.id, is_error: true, content: e.message.replace(/ Use: node .*$/, '') };
         }
       });
